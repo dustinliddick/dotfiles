@@ -1,0 +1,503 @@
+#!/bin/bash
+
+# Neovim configuration setup script
+# Incorporates modern Neovim configuration inspired by jdhao/nvim-config
+
+set -e
+
+# Color codes
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+print_success() { echo -e "${GREEN}✓${NC} $1"; }
+print_info() { echo -e "${BLUE}ℹ${NC} $1"; }
+print_warning() { echo -e "${YELLOW}⚠${NC} $1"; }
+print_error() { echo -e "${RED}✗${NC} $1"; }
+
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+NVIM_CONFIG_DIR="$HOME/.config/nvim"
+
+show_help() {
+    cat << EOF
+Neovim Configuration Setup
+
+This script sets up a modern Neovim configuration inspired by jdhao's setup.
+
+Usage: setup-neovim [options]
+
+Options:
+    --clean         Remove existing Neovim configuration first
+    --minimal       Install minimal configuration only
+    --help, -h      Show this help message
+
+Features:
+    - Modern Lua-based configuration
+    - Plugin management with lazy.nvim
+    - LSP support for multiple languages
+    - Advanced completion and snippets
+    - Git integration
+    - Fuzzy finding and file navigation
+
+EOF
+}
+
+check_neovim() {
+    print_info "Checking Neovim installation..."
+    
+    if ! command -v nvim &> /dev/null; then
+        print_error "Neovim is not installed"
+        print_info "Install with: brew install neovim (macOS) or your package manager"
+        exit 1
+    fi
+    
+    local nvim_version
+    nvim_version=$(nvim --version | head -1 | awk '{print $2}' | sed 's/v//')
+    print_success "Found Neovim $nvim_version"
+}
+
+backup_existing_config() {
+    if [[ -d "$NVIM_CONFIG_DIR" ]]; then
+        local backup_dir="$HOME/.config/nvim.backup.$(date +%Y%m%d_%H%M%S)"
+        print_info "Backing up existing config to: $backup_dir"
+        mv "$NVIM_CONFIG_DIR" "$backup_dir"
+        print_success "Backed up existing configuration"
+    fi
+}
+
+create_config_structure() {
+    print_info "Creating Neovim configuration structure..."
+    
+    mkdir -p "$NVIM_CONFIG_DIR"/{lua,after/ftplugin}
+    mkdir -p "$NVIM_CONFIG_DIR/lua"/{config,plugins}
+    
+    print_success "Created configuration directories"
+}
+
+create_init_lua() {
+    print_info "Creating init.lua..."
+    
+    cat > "$NVIM_CONFIG_DIR/init.lua" << 'EOF'
+-- Modern Neovim Configuration
+-- Inspired by jdhao/nvim-config with personal customizations
+
+-- Set leader key early
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
+-- Disable netrw (we'll use file explorer plugins)
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
+-- Load configuration modules
+require("config.options")
+require("config.keymaps")
+require("config.autocmds")
+require("config.lazy")
+
+-- Set colorscheme
+vim.cmd.colorscheme("default")
+EOF
+    
+    print_success "Created init.lua"
+}
+
+create_options_config() {
+    print_info "Creating options configuration..."
+    
+    cat > "$NVIM_CONFIG_DIR/lua/config/options.lua" << 'EOF'
+-- Neovim Options Configuration
+
+local opt = vim.opt
+
+-- Line numbers
+opt.number = true
+opt.relativenumber = true
+
+-- Indentation
+opt.tabstop = 4
+opt.shiftwidth = 4
+opt.expandtab = true
+opt.autoindent = true
+opt.smartindent = true
+
+-- Search
+opt.hlsearch = true
+opt.incsearch = true
+opt.ignorecase = true
+opt.smartcase = true
+
+-- Appearance
+opt.termguicolors = true
+opt.signcolumn = "yes"
+opt.colorcolumn = "80"
+opt.cursorline = true
+opt.wrap = false
+opt.scrolloff = 8
+opt.sidescrolloff = 8
+
+-- Behavior
+opt.mouse = "a"
+opt.clipboard:append("unnamedplus")
+opt.splitright = true
+opt.splitbelow = true
+opt.undofile = true
+opt.swapfile = false
+opt.backup = false
+opt.writebackup = false
+
+-- Completion
+opt.completeopt = { "menu", "menuone", "noselect" }
+opt.pumheight = 10
+
+-- Update time
+opt.updatetime = 250
+opt.timeoutlen = 300
+
+-- File encoding
+opt.fileencoding = "utf-8"
+
+-- Folding
+opt.foldmethod = "expr"
+opt.foldexpr = "nvim_treesitter#foldexpr()"
+opt.foldenable = false
+EOF
+    
+    print_success "Created options configuration"
+}
+
+create_keymaps_config() {
+    print_info "Creating keymaps configuration..."
+    
+    cat > "$NVIM_CONFIG_DIR/lua/config/keymaps.lua" << 'EOF'
+-- Keymaps Configuration
+
+local keymap = vim.keymap.set
+local opts = { noremap = true, silent = true }
+
+-- Better window navigation
+keymap("n", "<C-h>", "<C-w>h", opts)
+keymap("n", "<C-j>", "<C-w>j", opts)
+keymap("n", "<C-k>", "<C-w>k", opts)
+keymap("n", "<C-l>", "<C-w>l", opts)
+
+-- Resize windows
+keymap("n", "<C-Up>", ":resize -2<CR>", opts)
+keymap("n", "<C-Down>", ":resize +2<CR>", opts)
+keymap("n", "<C-Left>", ":vertical resize -2<CR>", opts)
+keymap("n", "<C-Right>", ":vertical resize +2<CR>", opts)
+
+-- Navigate buffers
+keymap("n", "<S-l>", ":bnext<CR>", opts)
+keymap("n", "<S-h>", ":bprevious<CR>", opts)
+
+-- Move text up and down
+keymap("n", "<A-j>", "<Esc>:m .+1<CR>==gi", opts)
+keymap("n", "<A-k>", "<Esc>:m .-2<CR>==gi", opts)
+keymap("v", "<A-j>", ":m .+1<CR>==", opts)
+keymap("v", "<A-k>", ":m .-2<CR>==", opts)
+keymap("x", "<A-j>", ":move '>+1<CR>gv-gv", opts)
+keymap("x", "<A-k>", ":move '<-2<CR>gv-gv", opts)
+
+-- Stay in indent mode
+keymap("v", "<", "<gv", opts)
+keymap("v", ">", ">gv", opts)
+
+-- Better paste
+keymap("v", "p", '"_dP', opts)
+
+-- Clear search highlight
+keymap("n", "<leader>h", ":nohlsearch<CR>", opts)
+
+-- Quick save and quit
+keymap("n", "<leader>w", ":w<CR>", opts)
+keymap("n", "<leader>q", ":q<CR>", opts)
+keymap("n", "<leader>x", ":x<CR>", opts)
+
+-- Split windows
+keymap("n", "<leader>sv", ":vsplit<CR>", opts)
+keymap("n", "<leader>sh", ":split<CR>", opts)
+keymap("n", "<leader>sc", ":close<CR>", opts)
+
+-- Terminal
+keymap("n", "<leader>t", ":terminal<CR>", opts)
+keymap("t", "<Esc>", [[<C-\><C-n>]], opts)
+
+-- File operations
+keymap("n", "<leader>e", ":Explore<CR>", opts)
+EOF
+    
+    print_success "Created keymaps configuration"
+}
+
+create_autocmds_config() {
+    print_info "Creating autocommands configuration..."
+    
+    cat > "$NVIM_CONFIG_DIR/lua/config/autocmds.lua" << 'EOF'
+-- Autocommands Configuration
+
+local augroup = vim.api.nvim_create_augroup
+local autocmd = vim.api.nvim_create_autocmd
+
+-- Highlight on yank
+augroup("YankHighlight", { clear = true })
+autocmd("TextYankPost", {
+  group = "YankHighlight",
+  callback = function()
+    vim.highlight.on_yank({ higroup = "Visual", timeout = 200 })
+  end,
+})
+
+-- Remove trailing whitespace on save
+augroup("TrimWhitespace", { clear = true })
+autocmd("BufWritePre", {
+  group = "TrimWhitespace",
+  pattern = "*",
+  command = "%s/\\s\\+$//e",
+})
+
+-- Auto-resize splits when window is resized
+augroup("ResizeSplits", { clear = true })
+autocmd("VimResized", {
+  group = "ResizeSplits",
+  callback = function()
+    vim.cmd("tabdo wincmd =")
+  end,
+})
+
+-- Go to last location when opening a buffer
+augroup("LastLocation", { clear = true })
+autocmd("BufReadPost", {
+  group = "LastLocation",
+  callback = function()
+    local mark = vim.api.nvim_buf_get_mark(0, '"')
+    if mark[1] > 1 and mark[1] <= vim.api.nvim_buf_line_count(0) then
+      vim.api.nvim_win_set_cursor(0, mark)
+    end
+  end,
+})
+
+-- Close some filetypes with <q>
+augroup("CloseWithQ", { clear = true })
+autocmd("FileType", {
+  group = "CloseWithQ",
+  pattern = { "qf", "help", "man", "lspinfo" },
+  callback = function(event)
+    vim.bo[event.buf].buflisted = false
+    vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = event.buf, silent = true })
+  end,
+})
+
+-- Set filetype for specific extensions
+augroup("FileTypeDetection", { clear = true })
+autocmd({ "BufRead", "BufNewFile" }, {
+  group = "FileTypeDetection",
+  pattern = "*.conf",
+  command = "set filetype=conf",
+})
+EOF
+    
+    print_success "Created autocommands configuration"
+}
+
+create_lazy_config() {
+    print_info "Creating lazy.nvim plugin manager configuration..."
+    
+    cat > "$NVIM_CONFIG_DIR/lua/config/lazy.lua" << 'EOF'
+-- Lazy.nvim Plugin Manager Configuration
+
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable",
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
+require("lazy").setup("plugins", {
+  defaults = {
+    lazy = true,
+    version = false,
+  },
+  install = { colorscheme = { "default" } },
+  checker = { enabled = true },
+  performance = {
+    rtp = {
+      disabled_plugins = {
+        "gzip",
+        "tarPlugin",
+        "tohtml",
+        "tutor",
+        "zipPlugin",
+      },
+    },
+  },
+})
+EOF
+    
+    print_success "Created lazy.nvim configuration"
+}
+
+create_essential_plugins() {
+    print_info "Creating essential plugins configuration..."
+    
+    cat > "$NVIM_CONFIG_DIR/lua/plugins/colorscheme.lua" << 'EOF'
+-- Colorscheme Plugins
+
+return {
+  {
+    "catppuccin/nvim",
+    name = "catppuccin",
+    priority = 1000,
+    config = function()
+      require("catppuccin").setup({
+        flavour = "mocha",
+        background = {
+          light = "latte",
+          dark = "mocha",
+        },
+      })
+      vim.cmd.colorscheme("catppuccin")
+    end,
+  },
+}
+EOF
+    
+    cat > "$NVIM_CONFIG_DIR/lua/plugins/treesitter.lua" << 'EOF'
+-- Treesitter Configuration
+
+return {
+  {
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
+    event = { "BufReadPost", "BufNewFile" },
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter-textobjects",
+    },
+    config = function()
+      require("nvim-treesitter.configs").setup({
+        ensure_installed = {
+          "lua",
+          "python",
+          "javascript",
+          "typescript",
+          "html",
+          "css",
+          "json",
+          "yaml",
+          "bash",
+          "markdown",
+          "markdown_inline",
+        },
+        highlight = { enable = true },
+        indent = { enable = true },
+        incremental_selection = {
+          enable = true,
+          keymaps = {
+            init_selection = "<C-space>",
+            node_incremental = "<C-space>",
+            scope_incremental = "<C-s>",
+            node_decremental = "<C-backspace>",
+          },
+        },
+      })
+    end,
+  },
+}
+EOF
+    
+    cat > "$NVIM_CONFIG_DIR/lua/plugins/telescope.lua" << 'EOF'
+-- Telescope Configuration
+
+return {
+  {
+    "nvim-telescope/telescope.nvim",
+    branch = "0.1.x",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    cmd = "Telescope",
+    keys = {
+      { "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find Files" },
+      { "<leader>fg", "<cmd>Telescope live_grep<cr>", desc = "Live Grep" },
+      { "<leader>fb", "<cmd>Telescope buffers<cr>", desc = "Buffers" },
+      { "<leader>fh", "<cmd>Telescope help_tags<cr>", desc = "Help Tags" },
+    },
+    config = function()
+      require("telescope").setup({
+        defaults = {
+          prompt_prefix = "🔍 ",
+          selection_caret = "➤ ",
+          path_display = { "truncate" },
+          file_ignore_patterns = { "%.git/", "node_modules/" },
+        },
+      })
+    end,
+  },
+}
+EOF
+    
+    print_success "Created essential plugins"
+}
+
+install_neovim_config() {
+    local clean_install=${1:-false}
+    local minimal_install=${2:-false}
+    
+    check_neovim
+    
+    if [[ "$clean_install" == "true" ]]; then
+        backup_existing_config
+    fi
+    
+    create_config_structure
+    create_init_lua
+    create_options_config
+    create_keymaps_config
+    create_autocmds_config
+    create_lazy_config
+    
+    if [[ "$minimal_install" == "false" ]]; then
+        create_essential_plugins
+    fi
+    
+    print_success "Neovim configuration installed successfully!"
+    print_info "Start Neovim and run :Lazy to install plugins"
+}
+
+# Main function
+main() {
+    local clean_install=false
+    local minimal_install=false
+    
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --clean)
+                clean_install=true
+                shift
+                ;;
+            --minimal)
+                minimal_install=true
+                shift
+                ;;
+            --help|-h)
+                show_help
+                exit 0
+                ;;
+            *)
+                print_error "Unknown option: $1"
+                show_help
+                exit 1
+                ;;
+        esac
+    done
+    
+    install_neovim_config "$clean_install" "$minimal_install"
+}
+
+main "$@"

@@ -1,0 +1,198 @@
+#!/bin/bash
+
+# Dotfiles management utility script
+# Inspired by GandalfTheSysAdmin's dotfiles management approach
+
+set -e
+
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_URL="https://github.com/$(git -C "$DOTFILES_DIR" config --get remote.origin.url | sed 's/.*github.com[:/]\(.*\)\.git/\1/')"
+
+# Color codes for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Helper functions
+print_success() {
+    echo -e "${GREEN}✓${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}✗${NC} $1"
+}
+
+print_info() {
+    echo -e "${BLUE}ℹ${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}⚠${NC} $1"
+}
+
+# Show help
+show_help() {
+    cat << EOF
+Dotfiles Management Utility
+
+Usage: dotfiles [command] [options]
+
+Commands:
+    update          Update dotfiles from remote repository
+    install         Run the installation script
+    backup          Create backup of current dotfiles
+    status          Show git status of dotfiles repository
+    open            Open dotfiles repository in browser
+    edit            Open dotfiles directory in editor
+    list            List all managed dotfiles
+    help            Show this help message
+
+Options:
+    --no-packages   Skip package installation during update
+    --force         Force operations (use with caution)
+
+Examples:
+    dotfiles update
+    dotfiles install
+    dotfiles backup
+    dotfiles status
+EOF
+}
+
+# Update dotfiles from remote
+update_dotfiles() {
+    local skip_packages=false
+    
+    if [[ "$1" == "--no-packages" ]]; then
+        skip_packages=true
+    fi
+    
+    print_info "Updating dotfiles from remote repository..."
+    
+    cd "$DOTFILES_DIR"
+    
+    # Stash any local changes
+    if ! git diff-index --quiet HEAD --; then
+        print_warning "Local changes detected, stashing..."
+        git stash push -m "Auto-stash before dotfiles update $(date)"
+    fi
+    
+    # Pull latest changes
+    git pull origin main || {
+        print_error "Failed to pull updates from remote"
+        exit 1
+    }
+    
+    # Run installation
+    if [[ "$skip_packages" == "true" ]]; then
+        print_info "Skipping package installation"
+        ./install.sh --no-packages
+    else
+        ./install.sh
+    fi
+    
+    print_success "Dotfiles updated successfully!"
+}
+
+# Install dotfiles
+install_dotfiles() {
+    print_info "Installing dotfiles..."
+    cd "$DOTFILES_DIR"
+    ./install.sh "$@"
+}
+
+# Create backup
+backup_dotfiles() {
+    print_info "Creating backup of current dotfiles..."
+    cd "$DOTFILES_DIR"
+    ./backup.sh
+}
+
+# Show git status
+show_status() {
+    cd "$DOTFILES_DIR"
+    print_info "Dotfiles repository status:"
+    git status
+}
+
+# Open repository in browser
+open_repo() {
+    if command -v open &> /dev/null; then
+        open "$REPO_URL"
+    elif command -v xdg-open &> /dev/null; then
+        xdg-open "$REPO_URL"
+    else
+        print_info "Repository URL: $REPO_URL"
+    fi
+}
+
+# Edit dotfiles
+edit_dotfiles() {
+    if [[ -n "$EDITOR" ]]; then
+        $EDITOR "$DOTFILES_DIR"
+    elif command -v code &> /dev/null; then
+        code "$DOTFILES_DIR"
+    elif command -v vim &> /dev/null; then
+        vim "$DOTFILES_DIR"
+    else
+        print_error "No editor found. Set \$EDITOR environment variable."
+        exit 1
+    fi
+}
+
+# List managed dotfiles
+list_dotfiles() {
+    print_info "Managed dotfiles:"
+    echo ""
+    echo "Shell configurations:"
+    echo "  ~/.zshrc -> $DOTFILES_DIR/zsh/.zshrc"
+    echo "  ~/.bashrc -> $DOTFILES_DIR/zsh/.bashrc"
+    echo "  ~/.bash_profile -> $DOTFILES_DIR/zsh/.bash_profile"
+    echo ""
+    echo "Git configuration:"
+    echo "  ~/.gitconfig -> $DOTFILES_DIR/config/git/.gitconfig"
+    echo "  ~/.gitignore_global -> $DOTFILES_DIR/config/git/.gitignore_global"
+    echo ""
+    echo "Editor configurations:"
+    echo "  ~/.vimrc -> $DOTFILES_DIR/vim/.vimrc"
+    echo "  ~/.tmux.conf -> $DOTFILES_DIR/config/tmux/.tmux.conf"
+    echo ""
+    echo "SSH configuration:"
+    echo "  ~/.ssh/config -> $DOTFILES_DIR/ssh/config"
+}
+
+# Main command handling
+case "${1:-help}" in
+    "update")
+        update_dotfiles "${@:2}"
+        ;;
+    "install")
+        install_dotfiles "${@:2}"
+        ;;
+    "backup")
+        backup_dotfiles
+        ;;
+    "status")
+        show_status
+        ;;
+    "open")
+        open_repo
+        ;;
+    "edit")
+        edit_dotfiles
+        ;;
+    "list")
+        list_dotfiles
+        ;;
+    "help"|"--help"|"-h")
+        show_help
+        ;;
+    *)
+        print_error "Unknown command: $1"
+        echo ""
+        show_help
+        exit 1
+        ;;
+esac

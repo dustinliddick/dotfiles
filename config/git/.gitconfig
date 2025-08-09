@@ -1,0 +1,114 @@
+[user]
+    # Replace with your actual name and email
+    name = Your Name
+    email = your.email@example.com
+
+[core]
+    editor = vim
+    autocrlf = input
+    excludesfile = ~/.gitignore_global
+    pager = less -FMRiX
+    filemode = true
+
+[init]
+    defaultBranch = main
+
+[push]
+    default = simple
+    autoSetupRemote = true
+
+[pull]
+    rebase = true
+
+[merge]
+    tool = vimdiff
+    conflictstyle = diff3
+
+[diff]
+    tool = vimdiff
+    colorMoved = zebra
+
+[color]
+    ui = auto
+    branch = auto
+    diff = auto
+    status = auto
+
+[color "branch"]
+    current = yellow reverse
+    local = yellow
+    remote = green
+
+[color "diff"]
+    meta = yellow bold
+    frag = magenta bold
+    old = red
+    new = green
+
+[color "status"]
+    added = yellow
+    changed = green
+    untracked = cyan
+
+[alias]
+    # Basic shortcuts
+    st = status
+    co = checkout
+    br = branch
+    ci = commit
+    ca = commit -a
+    cm = commit -m
+    cam = commit -am
+    
+    # Log aliases
+    lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+    ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
+    lnc = log --pretty=format:"%h\\ %s\\ [%cn]"
+    ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate
+    
+    # Diff aliases
+    d = diff
+    dc = diff --cached
+    dt = difftool
+    
+    # Reset aliases
+    unstage = reset HEAD --
+    uncommit = reset --soft HEAD~1
+    
+    # Stash aliases
+    sl = stash list
+    sa = stash apply
+    ss = stash save
+    
+    # Branch management
+    b = branch -v
+    ba = branch -a
+    bd = branch -d
+    bD = branch -D
+    
+    # Remote management
+    r = remote -v
+    
+    # Show current branch
+    cb = symbolic-ref --short HEAD
+    
+    # Quick amend
+    amend = commit --amend --no-edit
+    
+    # Find commits by source code
+    fc = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short -S$1; }; f"
+    
+    # Find commits by commit message
+    fm = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short --grep=$1; }; f"
+
+[rerere]
+    enabled = true
+
+[help]
+    autocorrect = 1
+
+[grep]
+    lineNumber = true
+
+[credential]
+    helper = osxkeychain
