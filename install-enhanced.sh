@@ -316,7 +316,8 @@ show_summary() {
     
     echo -e "${PURPLE}🎯 Next Steps:${NC}"
     echo -e "   1. Restart your terminal or run: ${YELLOW}source ~/.zshrc${NC}"
-    echo -e "   2. Configure Powerlevel10k: ${YELLOW}p10k configure${NC}"
+    echo -e "   2. ${WHITE}REQUIRED:${NC} Configure Powerlevel10k prompt: ${YELLOW}p10k configure${NC}"
+    echo -e "      ${BLUE}(This sets up your terminal prompt style - run it now!)${NC}"
     echo -e "   3. Update git user info: ${YELLOW}git config --global user.name \"Your Name\"${NC}"
     echo -e "   4. Update git user email: ${YELLOW}git config --global user.email \"your@email.com\"${NC}"
     echo -e "   5. Use dotfiles utility: ${YELLOW}dotfiles help${NC}"

@@ -37,6 +37,9 @@ set showmatch
 set mouse=a
 
 " Set color scheme
+" Try to use a more modern colorscheme if available
+silent! colorscheme catppuccin_mocha
+silent! colorscheme desert
 colorscheme default
 
 " Status line

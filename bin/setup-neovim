@@ -97,8 +97,10 @@ require("config.keymaps")
 require("config.autocmds")
 require("config.lazy")
 
--- Set colorscheme
-vim.cmd.colorscheme("default")
+-- Set colorscheme (will fallback to default if Catppuccin not available)
+if not pcall(vim.cmd.colorscheme, "catppuccin") then
+    vim.cmd.colorscheme("default")
+end
 EOF
     
     print_success "Created init.lua"
@@ -326,7 +328,7 @@ require("lazy").setup("plugins", {
     lazy = true,
     version = false,
   },
-  install = { colorscheme = { "default" } },
+  install = { colorscheme = { "catppuccin" } },
   checker = { enabled = true },
   performance = {
     rtp = {
