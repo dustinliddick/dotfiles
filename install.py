@@ -60,8 +60,11 @@ class DotfilesInstaller:
             self.home_dir / '.zshrc': self.dotfiles_dir / 'zsh' / '.zshrc',
             
             # Git configurations  
-            self.home_dir / '.gitconfig': self.dotfiles_dir / 'config' / 'git' / 'gitconfig',
-            self.home_dir / '.gitignore_global': self.dotfiles_dir / 'config' / 'git' / 'gitignore_global',
+            self.home_dir / '.gitconfig': self.dotfiles_dir / 'git' / 'gitconfig',
+            self.home_dir / '.gitignore_global': self.dotfiles_dir / 'git' / 'gitignore',
+            
+            # Claude configuration
+            self.home_dir / '.claude': self.dotfiles_dir / '.claude',
             
             # Tmux configuration
             self.home_dir / '.tmux.conf': self.dotfiles_dir / 'config' / 'tmux' / 'tmux.conf',
