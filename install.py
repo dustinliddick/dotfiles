@@ -58,6 +58,7 @@ class DotfilesInstaller:
         self.tasks = {
             # Shell configurations
             self.home_dir / '.zshrc': self.dotfiles_dir / 'zsh' / '.zshrc',
+            self.home_dir / '.bashrc': self.dotfiles_dir / 'zsh' / '.bashrc',
             
             # Git configurations
             self.home_dir / '.gitconfig': self.dotfiles_dir / 'config' / 'git' / 'gitconfig',
@@ -72,6 +73,16 @@ class DotfilesInstaller:
             
             # Alacritty configuration
             self.home_dir / '.config' / 'alacritty': self.dotfiles_dir / 'config' / 'alacritty',
+            
+            # Python configurations
+            self.home_dir / '.pythonrc.py': self.dotfiles_dir / 'python' / 'pythonrc.py',
+            self.home_dir / '.pylintrc': self.dotfiles_dir / 'python' / 'pylintrc',
+            self.home_dir / '.condarc': self.dotfiles_dir / 'python' / 'condarc',
+            self.home_dir / '.config' / 'pycodestyle': self.dotfiles_dir / 'python' / 'pycodestyle',
+            self.home_dir / '.config' / 'ptpython': self.dotfiles_dir / 'python',
+            
+            # Powerlevel10k configuration
+            self.home_dir / '.p10k.zsh': self.dotfiles_dir / 'zsh' / 'p10k.zsh',
         }
     
     def create_backup_dir(self):

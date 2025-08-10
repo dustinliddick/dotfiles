@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Main installation script
+# One-liner installer for dotfiles
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+print_status() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Repository URL
+REPO_URL="https://github.com/dustinliddick/dotfiles.git"
+DOTFILES_DIR="$HOME/.dotfiles"
+
+main() {
+    print_status "Installing dotfiles..."
+    
+    # Clone repository if it doesn't exist
+    if [[ ! -d "$DOTFILES_DIR" ]]; then
+        print_status "Cloning dotfiles repository..."
+        git clone "$REPO_URL" "$DOTFILES_DIR"
+    else
+        print_status "Updating existing dotfiles..."
+        cd "$DOTFILES_DIR"
+        git pull origin main
+    fi
+    
+    # Run the main installer
+    cd "$DOTFILES_DIR"
+    if [[ -f "install.py" ]]; then
+        python3 install.py
+    else
+        print_error "install.py not found"
+        exit 1
+    fi
+    
+    print_success "Dotfiles installation complete!"
+}
+
+main "$@"

@@ -1,0 +1,38 @@
+# Conda configuration file
+channels:
+  - conda-forge
+  - defaults
+
+# Always use strict channel priority
+channel_priority: strict
+
+# Show channel URLs when listing packages
+show_channel_urls: true
+
+# Auto update conda when installing packages
+auto_update_conda: false
+
+# Always confirm before installing/updating packages
+always_yes: false
+
+# Create environments in the standard location
+envs_dirs:
+  - ~/miniconda3/envs
+  - ~/.conda/envs
+
+# Package cache directories
+pkgs_dirs:
+  - ~/miniconda3/pkgs
+  - ~/.conda/pkgs
+
+# Aggressive update dependencies  
+aggressive_update_deps: true
+
+# Report errors automatically
+report_errors: false
+
+# Enable conda-env prompt modification
+changeps1: true
+
+# Use pip when conda package is not available
+pip_interop_enabled: true

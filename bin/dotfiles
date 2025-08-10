@@ -80,7 +80,7 @@ update_dotfiles() {
     fi
     
     # Pull latest changes
-    git pull origin main || {
+    git pull origin main || git pull origin master || {
         print_error "Failed to pull updates from remote"
         exit 1
     }
@@ -88,9 +88,10 @@ update_dotfiles() {
     # Run installation
     if [[ "$skip_packages" == "true" ]]; then
         print_info "Skipping package installation"
-        ./install.sh --no-packages
+        python3 install.py
     else
-        ./install.sh
+        print_info "Running installation script"
+        python3 install.py
     fi
     
     print_success "Dotfiles updated successfully!"
@@ -100,7 +101,7 @@ update_dotfiles() {
 install_dotfiles() {
     print_info "Installing dotfiles..."
     cd "$DOTFILES_DIR"
-    ./install.sh "$@"
+    python3 install.py "$@"
 }
 
 # Create backup
@@ -152,15 +153,14 @@ list_dotfiles() {
     echo "  ~/.bash_profile -> $DOTFILES_DIR/zsh/.bash_profile"
     echo ""
     echo "Git configuration:"
-    echo "  ~/.gitconfig -> $DOTFILES_DIR/config/git/.gitconfig"
-    echo "  ~/.gitignore_global -> $DOTFILES_DIR/config/git/.gitignore_global"
+    echo "  ~/.gitconfig -> $DOTFILES_DIR/config/git/gitconfig"
+    echo "  ~/.gitignore_global -> $DOTFILES_DIR/config/git/gitignore_global"
     echo ""
     echo "Editor configurations:"
     echo "  ~/.vimrc -> $DOTFILES_DIR/vim/.vimrc"
-    echo "  ~/.tmux.conf -> $DOTFILES_DIR/config/tmux/.tmux.conf"
-    echo ""
-    echo "SSH configuration:"
-    echo "  ~/.ssh/config -> $DOTFILES_DIR/ssh/config"
+    echo "  ~/.tmux.conf -> $DOTFILES_DIR/config/tmux/tmux.conf"
+    echo "  ~/.config/nvim -> $DOTFILES_DIR/config/nvim"
+    echo "  ~/.config/alacritty -> $DOTFILES_DIR/config/alacritty"
 }
 
 # Main command handling

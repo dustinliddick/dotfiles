@@ -1,51 +1,54 @@
-# dotfiles
+# My dotfiles
 
-A comprehensive collection of configuration files for macOS and Linux development environments.
+These are the config files that make my development environment feel like home. I spend most of my time working with Python, Java, and AWS stuff, so everything's tuned for that workflow.
 
-## Features
+## What I use
 
-- **Shell Configuration**: Zsh and Bash with useful aliases and functions
-- **Git Configuration**: Comprehensive config with helpful aliases and security settings
-- **Editor Configuration**: Vim and Tmux configurations
-- **Package Management**: Brewfile for automated macOS package installation
-- **SSH Configuration**: Secure SSH client configuration template
-- **Automated Installation**: One-command setup with backup of existing files
+Here's what's in my daily driver setup:
 
-## Quick Start
+- **Shell**: Zsh with all the aliases I actually use (no bloat, promise)
+- **Editor**: Neovim as my main editor, with Vim as backup when things get weird
+- **Terminal**: Alacritty because I live in the terminal
+- **Multiplexer**: Tmux for juggling projects without losing my mind
+- **Git**: Aliases that save me from typing the same commands 100 times a day
+- **AWS**: CLI shortcuts because nobody remembers those command flags
+- **Packages**: Brewfile with the tools I can't live without
+
+## Getting started
+
+Clone this repo and run the installer:
 
 ```bash
-git clone https://github.com/yourusername/dotfiles.git ~/.dotfiles
+git clone https://github.com/dustinliddick/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
-./install-enhanced.sh
+./install.py
 ```
 
-**Important**: After installation, run `p10k configure` to set up your terminal prompt theme.
+After that, run `p10k configure` to set up your prompt how you like it, then restart your terminal.
 
-Then restart your terminal or `source ~/.zshrc` (or `~/.bashrc`).
+## What's in here
 
-## What's Included
+```
+├── config/
+│   ├── git/           # Git config and global gitignore
+│   ├── nvim/          # Neovim setup (my main editor)
+│   └── tmux/          # Tmux configuration
+├── zsh/               # Zsh shell config with useful aliases
+├── vim/               # Vim config (backup when nvim acts up)
+├── bin/               # Helper scripts I actually use
+├── Brewfile           # All the packages I need
+└── install.py         # Setup script that won't break your existing stuff
+```
 
-- **Shell**: `.zshrc`, `.bashrc`, `.bash_profile`
-- **Git**: `.gitconfig`, `.gitignore_global` 
-- **Editors**: `.vimrc`, `.tmux.conf`
-- **Package Management**: `Brewfile`
-- **SSH**: `.ssh/config` template
-- **Scripts**: `install.sh`, `backup.sh`
+## The idea
 
-## Documentation
+I built this setup around my day-to-day work:
+- **Python stuff**: Virtual env helpers, linting shortcuts, testing aliases
+- **Java projects**: Maven/Gradle shortcuts because typing `mvn clean install` gets old
+- **AWS work**: CLI aliases for the commands I use most
+- **General productivity**: Scripts that save me time and keep my terminal organized
+- **Safe setup**: The installer backs up your existing configs instead of nuking them
 
-- [Installation Guide](docs/INSTALL.md) - Detailed installation and setup instructions
-- [Customization Guide](docs/CUSTOMIZE.md) - How to customize configurations and manual setup steps
-- [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
+---
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test on a fresh system
-5. Submit a pull request
-
-## License
-
-MIT License - see LICENSE file for details.
+*Feel free to fork and adapt these configs for your own setup! If you find something useful, I'd love to hear about it.*

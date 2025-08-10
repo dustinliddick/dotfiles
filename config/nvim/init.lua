@@ -1,6 +1,6 @@
 -- Neovim Configuration
--- Based on jdhao's comprehensive nvim-config
--- Personal configuration supporting Mac, Linux, and Windows
+-- Personal configuration inspired by jdhao's nvim-config
+-- Supports macOS, Linux, and Windows
 
 -- Check Neovim version compatibility
 if vim.fn.has("nvim-0.8") == 0 then
@@ -8,7 +8,7 @@ if vim.fn.has("nvim-0.8") == 0 then
   return
 end
 
--- Load global variables and settings
+-- Load core configuration modules
 require("globals")
 require("options")
 require("mappings")
@@ -28,7 +28,7 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- Load plugins
+-- Load plugins with lazy.nvim
 require("lazy").setup("plugins", {
   ui = {
     border = "rounded",
@@ -40,12 +40,30 @@ require("lazy").setup("plugins", {
   change_detection = {
     notify = false,
   },
+  performance = {
+    rtp = {
+      disabled_plugins = {
+        "gzip",
+        "matchit",
+        "matchparen",
+        "netrwPlugin",
+        "tarPlugin",
+        "tohtml",
+        "tutor",
+        "zipPlugin",
+      },
+    },
+  },
 })
 
--- Set colorscheme
-vim.cmd("colorscheme kanagawa")
+-- Load colorschemes configuration
+require("colorschemes")
 
--- Enable filetype plugin and indent
+-- Load custom autocommands
+require("custom-autocmd")
+
+-- Load diagnostic configuration
+require("diagnostic-conf")
+
+-- Enable filetype detection and plugins
 vim.cmd("filetype plugin indent on")
-
-print("Neovim configuration loaded successfully!")
