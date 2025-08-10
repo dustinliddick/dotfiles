@@ -27,7 +27,7 @@ local plugin_specs = {
   { "hrsh7th/cmp-buffer", lazy = true },
   { "hrsh7th/cmp-omni", lazy = true },
   { "hrsh7th/cmp-cmdline", lazy = true },
-  { "quangnguyen30192/cmp-nvim-ultisnips", lazy = true },
+  -- { "quangnguyen30192/cmp-nvim-ultisnips", lazy = true },
   {
     "hrsh7th/nvim-cmp",
     name = "nvim-cmp",
@@ -272,13 +272,13 @@ local plugin_specs = {
   },
 
   -- Snippet engine and snippet template
-  {
-    "SirVer/ultisnips",
-    dependencies = {
-      "honza/vim-snippets",
-    },
-    event = "InsertEnter",
-  },
+  -- {
+  --   "SirVer/ultisnips",
+  --   dependencies = {
+  --     "honza/vim-snippets",
+  --   },
+  --   event = "InsertEnter",
+  -- },
 
   -- Automatic insertion and deletion of a pair of characters
   {

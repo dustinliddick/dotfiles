@@ -9,7 +9,8 @@
       "WebFetch(domain:github.com)",
       "Bash(echo $ZSH_THEME)",
       "Bash(brew install:*)",
-      "Bash(pip3 install:*)"
+      "Bash(pip3 install:*)",
+      "Bash(nvim:*)"
     ],
     "deny": []
   }

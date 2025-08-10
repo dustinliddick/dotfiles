@@ -114,6 +114,10 @@ alias serve='python3 -m http.server 8000'
 alias json='pbpaste | jq "." | pbcopy'
 alias reload='source ~/.zshrc'
 
+# Editor aliases
+alias vim='nvim'
+alias vi='nvim'
+
 # Network and system
 alias myip='curl -s ifconfig.me'
 alias ports='netstat -tulanp'
