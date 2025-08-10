@@ -33,6 +33,8 @@ After that, run `p10k configure` to set up your prompt how you like it, then res
 │   ├── git/           # Git config and global gitignore
 │   ├── nvim/          # Neovim setup (my main editor)
 │   └── tmux/          # Tmux configuration
+├── claude/            # Custom CLI commands and workflows
+│   └── commands/      # Organized development workflow commands
 ├── zsh/               # Zsh shell config with useful aliases
 ├── vim/               # Vim config (backup when nvim acts up)
 ├── bin/               # Helper scripts I actually use

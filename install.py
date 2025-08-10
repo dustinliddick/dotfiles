@@ -63,8 +63,8 @@ class DotfilesInstaller:
             self.home_dir / '.gitconfig': self.dotfiles_dir / 'git' / 'gitconfig',
             self.home_dir / '.gitignore_global': self.dotfiles_dir / 'git' / 'gitignore',
             
-            # Claude configuration
-            self.home_dir / '.claude': self.dotfiles_dir / '.claude',
+            # Claude commands
+            self.home_dir / '.claude' / 'commands': self.dotfiles_dir / 'claude' / 'commands',
             
             # Tmux configuration
             self.home_dir / '.tmux.conf': self.dotfiles_dir / 'config' / 'tmux' / 'tmux.conf',
@@ -209,14 +209,15 @@ class DotfilesInstaller:
         print()
         print_colored("Next Steps:", Colors.YELLOW)
         print("   1. Install dependencies: brew install antidote fd fzf bat ripgrep")
-        print("   2. Restart your terminal or run: source ~/.zshrc")
-        print("   3. Configure Powerlevel10k prompt: p10k configure")
-        print("   4. Install Tmux Plugin Manager: git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm")
-        print("   5. In tmux, press prefix + I to install plugins")
-        print("   6. Update git user info: git config --global user.name \"Your Name\"")
-        print("   7. Update git user email: git config --global user.email \"your@email.com\"")
-        print("   8. Open Neovim and run :Lazy to install plugins")
-        print("   9. Install language servers: npm install -g typescript-language-server")
+        print("   2. Install Claude CLI: https://docs.anthropic.com/en/docs/claude-code/quickstart")
+        print("   3. Restart your terminal or run: source ~/.zshrc")
+        print("   4. Configure Powerlevel10k prompt: p10k configure")
+        print("   5. Install Tmux Plugin Manager: git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm")
+        print("   6. In tmux, press prefix + I to install plugins")
+        print("   7. Update git user info: git config --global user.name \"Your Name\"")
+        print("   8. Update git user email: git config --global user.email \"your@email.com\"")
+        print("   9. Open Neovim and run :Lazy to install plugins")
+        print("  10. Install language servers: npm install -g typescript-language-server")
         print()
         
         return True
