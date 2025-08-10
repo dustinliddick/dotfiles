@@ -58,14 +58,12 @@ class DotfilesInstaller:
         self.tasks = {
             # Shell configurations
             self.home_dir / '.zshrc': self.dotfiles_dir / 'zsh' / '.zshrc',
-            self.home_dir / '.bashrc': self.dotfiles_dir / 'zsh' / '.bashrc',
             
-            # Git configurations
+            # Git configurations  
             self.home_dir / '.gitconfig': self.dotfiles_dir / 'config' / 'git' / 'gitconfig',
             self.home_dir / '.gitignore_global': self.dotfiles_dir / 'config' / 'git' / 'gitignore_global',
             
-            # Editor configurations
-            self.home_dir / '.vimrc': self.dotfiles_dir / 'vim' / '.vimrc',
+            # Tmux configuration
             self.home_dir / '.tmux.conf': self.dotfiles_dir / 'config' / 'tmux' / 'tmux.conf',
             
             # Neovim configuration
@@ -207,14 +205,15 @@ class DotfilesInstaller:
         print_success("Installation completed!")
         print()
         print_colored("Next Steps:", Colors.YELLOW)
-        print("   1. Restart your terminal or run: source ~/.zshrc")
-        print("   2. Configure Powerlevel10k prompt: p10k configure")
-        print("   3. Install Tmux Plugin Manager: git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm")
-        print("   4. In tmux, press prefix + I to install plugins")
-        print("   5. Update git user info: git config --global user.name \"Your Name\"")
-        print("   6. Update git user email: git config --global user.email \"your@email.com\"")
-        print("   7. Install additional tools: brew install bat fd ripgrep tree delta")
+        print("   1. Install dependencies: brew install antidote fd fzf bat ripgrep")
+        print("   2. Restart your terminal or run: source ~/.zshrc")
+        print("   3. Configure Powerlevel10k prompt: p10k configure")
+        print("   4. Install Tmux Plugin Manager: git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm")
+        print("   5. In tmux, press prefix + I to install plugins")
+        print("   6. Update git user info: git config --global user.name \"Your Name\"")
+        print("   7. Update git user email: git config --global user.email \"your@email.com\"")
         print("   8. Open Neovim and run :Lazy to install plugins")
+        print("   9. Install language servers: npm install -g typescript-language-server")
         print()
         
         return True

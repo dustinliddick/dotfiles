@@ -1,42 +1,43 @@
+# ~/.zshrc - Zsh configuration (inspired by wookayin/dotfiles)
+# Personal configuration for enhanced zsh experience
+
+# Performance optimization: Enable loader for faster startup
+if [[ -v ZSH_PROFILE_LOG ]] && command -v zmodload > /dev/null 2>&1; then
+  zmodload zsh/datetime
+  setopt PROMPT_SUBST
+  PS4='+$EPOCHREALTIME %N:%i> '
+  exec 3>&2 2>${ZSH_PROFILE_LOG:-/tmp/zsh-profile.log}
+  setopt XTRACE
+fi
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# Path to your oh-my-zsh installation.
-export ZSH="$HOME/.oh-my-zsh"
+# Initialize completion system before plugins
+autoload -Uz compinit
+compinit
 
-# Set name of the theme to load --- if set to "random", it will
-# load a random theme each time oh-my-zsh is loaded, in which case,
-# to know which specific one was loaded, run: echo $RANDOM_THEME
-# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="powerlevel10k/powerlevel10k"
+# Antidote plugin manager setup
+source /opt/homebrew/opt/antidote/share/antidote/antidote.zsh
 
-# Which plugins would you like to load?
-# Standard plugins can be found in $ZSH/plugins/
-# Custom plugins may be added to $ZSH_CUSTOM/plugins/
-plugins=(
-    git
-    brew
-    macos
-    node
-    npm
-    docker
-    kubectl
-    terraform
-    aws
-    zsh-autosuggestions
-    zsh-syntax-highlighting
-)
+# Load generated plugins (static loading for performance)  
+source /Users/dustinliddick/personal_projects/dotfiles/zsh/.zsh_plugins.zsh
 
-source $ZSH/oh-my-zsh.sh
+# Terminal settings
+export COLORTERM="truecolor"
+export CLICOLOR=1
 
-# User configuration
+# Host color for prompt (wookayin style)
+HOST_COLOR="${HOST_COLOR:-6}"  # cyan
 
-# Export PATH
-export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+# Dynamic tab color for SSH (iTerm2)
+if [[ -n "$SSH_CONNECTION" ]] && [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
+  echo -ne "\033]6;1;bg;red;brightness;64\a"
+  echo -ne "\033]6;1;bg;green;brightness;128\a" 
+  echo -ne "\033]6;1;bg;blue;brightness;255\a"
+fi
 
 # Homebrew
 if [[ -f "/opt/homebrew/bin/brew" ]]; then
@@ -45,61 +46,54 @@ elif [[ -f "/usr/local/bin/brew" ]]; then
     eval "$(/usr/local/bin/brew shellenv)"
 fi
 
-# Node Version Manager (nvm) - Lazy loading for performance
-export NVM_DIR="$HOME/.nvm"
+# Path configuration
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
-# Lazy load nvm for better shell startup performance
-nvm() {
-    unset -f nvm node npm npx
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-    nvm "$@"
-}
+# Go configuration
+export GOPATH=$HOME/go
+export PATH=$GOPATH/bin:$PATH
 
-node() {
-    unset -f nvm node npm npx
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-    node "$@"
-}
-
-npm() {
-    unset -f nvm node npm npx
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-    npm "$@"
-}
-
-npx() {
-    unset -f nvm node npm npx
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-    npx "$@"
-}
-
-# Python
+# Python configuration
 if command -v pyenv 1>/dev/null 2>&1; then
     eval "$(pyenv init -)"
 fi
 
-# Go
-export GOPATH=$HOME/go
-export PATH=$GOPATH/bin:$PATH
+# Lazy loading for performance-critical tools
+# Node Version Manager (nvm) - Lazy loading
+export NVM_DIR="$HOME/.nvm"
+_lazy_load_nvm() {
+  unset -f node npm npx nvm
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use
+  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+}
+node() { _lazy_load_nvm; node "$@"; }
+npm() { _lazy_load_nvm; npm "$@"; }
+npx() { _lazy_load_nvm; npx "$@"; }
+nvm() { _lazy_load_nvm; nvm "$@"; }
 
-# Aliases
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
+# wookayin-style aliases and functions
+
+# Basic aliases
+alias ll='ls -alF --color=auto'
+alias la='ls -A --color=auto'  
+alias l='ls -CF --color=auto'
+alias ls='ls --color=auto'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 alias ~='cd ~'
 alias c='clear'
 alias h='history'
-alias j='jobs -l'
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
+
+# Enhanced tools
+if command -v bat >/dev/null 2>&1; then
+  alias cat='bat --paging=never'
+fi
+alias preview='fzf --preview "bat --color=always --style=numbers --line-range=:300 {}"'
 
 # Git aliases
 alias gs='git status'
@@ -112,78 +106,30 @@ alias gpl='git pull'
 alias gd='git diff'
 alias gb='git branch'
 alias gco='git checkout'
-alias glog='git log --oneline --decorate --graph'
 
-# Python aliases
+# Development aliases
 alias py='python3'
 alias pip='pip3'
-alias venv='python3 -m venv'
-alias activate='source venv/bin/activate'
-alias deactivate='deactivate'
-alias pyinstall='pip3 install -r requirements.txt'
-alias pyfreeze='pip3 freeze > requirements.txt'
-
-# Java aliases
-alias mvnci='mvn clean install'
-alias mvntest='mvn test'
-alias mvnrun='mvn spring-boot:run'
-alias gradlew='./gradlew'
-alias gw='./gradlew'
-
-# AWS aliases
-alias awswhoami='aws sts get-caller-identity'
-alias awsprofiles='aws configure list-profiles'
-alias ec2='aws ec2 describe-instances --query "Reservations[].Instances[].[InstanceId,State.Name,InstanceType,Tags[?Key=='"'"'Name'"'"'].Value|[0]]" --output table'
-
-# JSON aliases
-alias jqp='jq . -C'  # pretty print with colors
-alias jsonfmt='python3 -m json.tool'
-
-# Docker aliases
-alias d='docker'
-alias dc='docker-compose'
-alias dps='docker ps'
-alias di='docker images'
-alias drmi='docker rmi'
-alias drmf='docker rm -f'
-
-# Additional productivity aliases
-alias tree='tree -C'
-alias du='du -h'
-alias df='df -h'
-alias free='top -l 1 -s 0 | head -8'
-alias ls='ls -G'
-alias ll='ls -lahG'
-alias cat='bat --paging=never'
-alias preview='fzf --preview "bat --color=always {}"'
-
-# Network aliases
-alias myip='curl ifconfig.me'
-alias localip="ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'"
-alias ports='netstat -tulanp'
-
-# System monitoring
-alias cpu='top -o cpu'
-alias mem='top -o mem'
-alias disk='df -h | grep -E "^(/dev/|Filesystem)"'
-
-# Development shortcuts
 alias serve='python3 -m http.server 8000'
 alias json='pbpaste | jq "." | pbcopy'
 alias reload='source ~/.zshrc'
 
-# Advanced functions from wookayin/dotfiles
-mkcd() {
+# Network and system
+alias myip='curl -s ifconfig.me'
+alias ports='netstat -tulanp'
+
+# wookayin-style advanced functions
+function mkcd() {
     mkdir -p "$1" && cd "$1"
 }
 
-# Find and kill process by name
-fkill() {
+# Find and kill process by name (enhanced with fzf)
+function fkill() {
     local pid
     if [ "$UID" != "0" ]; then
-        pid=$(ps -f -u $UID | sed 1d | fzf -m | awk '{print $2}')
+        pid=$(ps -f -u $UID | sed 1d | fzf -m --header="[kill:process]" | awk '{print $2}')
     else
-        pid=$(ps -ef | sed 1d | fzf -m | awk '{print $2}')
+        pid=$(ps -ef | sed 1d | fzf -m --header="[kill:process]" | awk '{print $2}')
     fi
     
     if [ "x$pid" != "x" ]; then
@@ -191,11 +137,12 @@ fkill() {
     fi
 }
 
-# Git log with fzf integration
-glog() {
+# Enhanced git log with fzf integration  
+function glog() {
     git log --graph --color=always \
         --format="%C(auto)%h%d %s %C(black)%C(bold)%cr" "$@" |
     fzf --ansi --no-sort --reverse --tiebreak=index --bind=ctrl-s:toggle-sort \
+        --header="[git:log] CTRL-S:toggle-sort, ENTER:show commit" \
         --bind "ctrl-m:execute:
                 (grep -o '[a-f0-9]\{7\}' | head -1 |
                 xargs -I % sh -c 'git show --color=always % | less -R') << 'FZF-EOF'
@@ -203,118 +150,114 @@ glog() {
                 FZF-EOF"
 }
 
-# Enhanced cd with fzf
-cdf() {
+# Enhanced cd with fzf (recursive directory finder)
+function cdf() {
     local dir
-    dir=$(find ${1:-.} -path '*/\.*' -prune \
-                  -o -type d -print 2> /dev/null | fzf +m) &&
+    dir=$(fd --type d --hidden --follow --exclude .git . ${1:-.} | fzf --header="[cd:dir]") &&
     cd "$dir"
 }
 
-# Search and edit files with fzf + vim
-fe() {
+# Search and edit files with fzf + editor
+function fe() {
     local files
-    IFS=$'\n' files=($(fzf-tmux --query="$1" --multi --select-1 --exit-0))
-    [[ -n "$files" ]] && ${EDITOR:-vim} "${files[@]}"
+    IFS=$'\n' files=($(fd --type f --hidden --follow --exclude .git . ${1:-.} | fzf -m --header="[edit:files]"))
+    [[ -n "$files" ]] && ${EDITOR:-nvim} "${files[@]}"
 }
 
-# Process search with fzf
-fps() {
+# Process search with fzf (enhanced)
+function fps() {
     local pid
-    pid=$(ps aux | fzf --header="[process:search]" | awk '{print $2}')
+    pid=$(ps aux | fzf --header="[process:search]" --header-lines=1 | awk '{print $2}')
     if [ "x$pid" != "x" ]; then
-        echo $pid
+        echo "PID: $pid"
     fi
 }
 
-# Python project setup
-pyproject() {
-    mkdir -p "$1" && cd "$1"
-    python3 -m venv venv
-    source venv/bin/activate
-    echo "venv/" > .gitignore
-    echo "__pycache__/" >> .gitignore
-    echo "*.pyc" >> .gitignore
-    echo "# $1" > README.md
-    touch requirements.txt
-    git init
-    echo "Created Python project: $1"
-}
-
-# AWS profile switcher
-awsprofile() {
-    if [ -z "$1" ]; then
-        echo "Current profile: ${AWS_PROFILE:-default}"
-        echo "Available profiles:"
-        aws configure list-profiles
-    else
-        export AWS_PROFILE="$1"
-        echo "Switched to AWS profile: $1"
-    fi
-}
-
-# JSON validation
-jsoncheck() {
-    if [ -f "$1" ]; then
-        python3 -m json.tool "$1" > /dev/null && echo "✓ Valid JSON" || echo "✗ Invalid JSON"
-    else
-        echo "$1" | python3 -m json.tool > /dev/null && echo "✓ Valid JSON" || echo "✗ Invalid JSON"
-    fi
-}
-
-extract() {
-    if [ -f $1 ] ; then
-        case $1 in
-            *.tar.bz2)   tar xjf $1     ;;
-            *.tar.gz)    tar xzf $1     ;;
-            *.bz2)       bunzip2 $1     ;;
-            *.rar)       unrar e $1     ;;
-            *.gz)        gunzip $1      ;;
-            *.tar)       tar xf $1      ;;
-            *.tbz2)      tar xjf $1     ;;
-            *.tgz)       tar xzf $1     ;;
-            *.zip)       unzip $1       ;;
-            *.Z)         uncompress $1  ;;
-            *.7z)        7z x $1        ;;
-            *)     echo "'$1' cannot be extracted via extract()" ;;
+# Enhanced file extraction
+function extract() {
+    if [ -f "$1" ] ; then
+        case "$1" in
+            *.tar.bz2)   tar xjf "$1"     ;;
+            *.tar.gz)    tar xzf "$1"     ;;
+            *.bz2)       bunzip2 "$1"     ;;
+            *.rar)       unrar x "$1"     ;;
+            *.gz)        gunzip "$1"      ;;
+            *.tar)       tar xf "$1"      ;;
+            *.tbz2)      tar xjf "$1"     ;;
+            *.tgz)       tar xzf "$1"     ;;
+            *.zip)       unzip "$1"       ;;
+            *.Z)         uncompress "$1"  ;;
+            *.7z)        7z x "$1"        ;;
+            *)           echo "'$1' cannot be extracted via extract()" ;;
         esac
     else
         echo "'$1' is not a valid file"
     fi
 }
 
-# Advanced ZSH options for better experience
-setopt AUTO_CD              # cd by typing directory name if not a command
-setopt AUTO_PUSHD           # pushd automatically when cd
-setopt PUSHD_IGNORE_DUPS    # ignore duplicate entries in pushd
-setopt CORRECT              # correct command spelling
-setopt HIST_VERIFY          # verify history expansion
-setopt EXTENDED_GLOB        # enable extended globbing
-setopt NO_CASE_GLOB         # case insensitive globbing
-setopt NUMERIC_GLOB_SORT    # sort numeric glob results
-setopt APPEND_HISTORY       # append to history file
-setopt INC_APPEND_HISTORY   # append incrementally
-setopt SHARE_HISTORY        # share history between sessions
+# wookayin-style ZSH options
+setopt AUTO_CD                 # cd by typing directory name
+setopt AUTO_PUSHD              # pushd automatically when cd  
+setopt PUSHD_IGNORE_DUPS       # ignore duplicate entries in pushd
+setopt CORRECT                 # command spelling correction
+setopt HIST_VERIFY             # verify history expansion
+setopt EXTENDED_GLOB           # enable extended globbing
+setopt NO_CASE_GLOB            # case insensitive globbing
+setopt NUMERIC_GLOB_SORT       # sort numeric glob results
+setopt APPEND_HISTORY          # append to history file
+setopt INC_APPEND_HISTORY      # append incrementally
+setopt SHARE_HISTORY           # share history between sessions
+setopt HIST_IGNORE_DUPS        # ignore duplicate commands
+setopt HIST_REDUCE_BLANKS      # remove unnecessary blanks
 
-# Enhanced completion settings
+# Enhanced completion system
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
 zstyle ':completion:*' menu select
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*:descriptions' format '[%d]'
+zstyle ':completion:*:warnings' format 'No matches for: %d'
+zstyle ':completion:*' group-name ''
 
-# FZF configuration
-export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
-export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
-export FZF_DEFAULT_OPTS='
-  --height 40% --layout=reverse --border
-  --color=fg:#d0d0d0,bg:#121212,hl:#5f87af
-  --color=fg+:#d0d0d0,bg+:#262626,hl+:#5fd7ff
-  --color=info:#afaf87,prompt:#d7005f,pointer:#af5fff
-  --color=marker:#87ff00,spinner:#af5fff,header:#87afaf'
+# FZF configuration (wookayin style)
+if command -v fzf >/dev/null 2>&1; then
+  # Use fd for better file finding
+  if command -v fd >/dev/null 2>&1; then
+    export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+  fi
+  
+  # Enhanced FZF options with better colors
+  export FZF_DEFAULT_OPTS='
+    --height 40% --layout=reverse --border --margin=1 --padding=1
+    --color=fg:#c0c0c0,bg:#1e1e1e,hl:#569cd6
+    --color=fg+:#ffffff,bg+:#2d2d30,hl+:#4fc1ff
+    --color=info:#ce9178,prompt:#d19a66,pointer:#e06c75
+    --color=marker:#98c379,spinner:#56b6c2,header:#61afef'
+    
+  # FZF key bindings and completion
+  [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+fi
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.dotfiles/zsh/p10k.zsh ]] || source ~/.dotfiles/zsh/p10k.zsh
+# iTerm2 shell integration (macOS)
+if [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
+  test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+fi
 
-# Local customizations
+# Terminfo compatibility
+if [[ "$COLORTERM" == "gnome-terminal" || "$COLORTERM" == "xfce4-terminal" ]]; then
+  export TERM=xterm-256color
+fi
+
+# Load Powerlevel10k configuration
+[[ ! -f /Users/dustinliddick/personal_projects/dotfiles/zsh/p10k.zsh ]] || source /Users/dustinliddick/personal_projects/dotfiles/zsh/p10k.zsh
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# Load local customizations
 [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
+
+# Profiling end
+if [[ -v ZSH_PROFILE_LOG ]]; then
+  unsetopt XTRACE
+  exec 2>&3 3>&-
+fi

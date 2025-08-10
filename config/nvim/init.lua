@@ -1,69 +1,40 @@
--- Neovim Configuration
--- Personal configuration inspired by jdhao's nvim-config
--- Supports macOS, Linux, and Windows
+-- This is my personal Nvim configuration supporting Mac, Linux and Windows, with various plugins configured.
+-- This configuration evolves as I learn more about Nvim and become more proficient in using Nvim.
+-- Since it is very long (more than 1000 lines!), you should read it carefully and take only the settings that suit you.
+-- I would not recommend cloning this repo and replace your own config. Good configurations are personal,
+-- built over time with a lot of polish.
+--
+-- Author: Jiedong Hao
+-- Email: jdhao@hotmail.com
+-- Blog: https://jdhao.github.io/
+-- GitHub: https://github.com/jdhao
+-- StackOverflow: https://stackoverflow.com/users/6064933/jdhao
+vim.loader.enable()
 
--- Check Neovim version compatibility
-if vim.fn.has("nvim-0.8") == 0 then
-  vim.api.nvim_err_writeln("This config requires Neovim >= 0.8")
-  return
-end
+local utils = require("utils")
 
--- Load core configuration modules
+local expected_version = "0.11.3"
+utils.is_compatible_version(expected_version)
+
+local config_dir = vim.fn.stdpath("config")
+---@cast config_dir string
+
+-- some global settings
 require("globals")
-require("options")
-require("mappings")
-require("autocmds")
-
--- Bootstrap lazy.nvim plugin manager
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system({
-    "git",
-    "clone",
-    "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable",
-    lazypath,
-  })
-end
-vim.opt.rtp:prepend(lazypath)
-
--- Load plugins with lazy.nvim
-require("lazy").setup("plugins", {
-  ui = {
-    border = "rounded",
-  },
-  checker = {
-    enabled = true,
-    notify = false,
-  },
-  change_detection = {
-    notify = false,
-  },
-  performance = {
-    rtp = {
-      disabled_plugins = {
-        "gzip",
-        "matchit",
-        "matchparen",
-        "netrwPlugin",
-        "tarPlugin",
-        "tohtml",
-        "tutor",
-        "zipPlugin",
-      },
-    },
-  },
-})
-
--- Load colorschemes configuration
-require("colorschemes")
-
--- Load custom autocommands
+-- setting options in nvim
+vim.cmd("source " .. vim.fs.joinpath(config_dir, "viml_conf/options.vim"))
+-- various autocommands
 require("custom-autocmd")
+-- all the user-defined mappings
+require("mappings")
+-- all the plugins installed and their configurations
+vim.cmd("source " .. vim.fs.joinpath(config_dir, "viml_conf/plugins.vim"))
 
--- Load diagnostic configuration
+-- diagnostic related config
 require("diagnostic-conf")
 
--- Enable filetype detection and plugins
-vim.cmd("filetype plugin indent on")
+-- colorscheme settings
+local color_scheme = require("colorschemes")
+
+-- Load a random colorscheme
+color_scheme.rand_colorscheme()

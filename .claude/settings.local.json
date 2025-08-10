@@ -6,7 +6,10 @@
       "Bash(mkdir:*)",
       "Bash(mv:*)",
       "Bash(chmod:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(echo $ZSH_THEME)",
+      "Bash(brew install:*)",
+      "Bash(pip3 install:*)"
     ],
     "deny": []
   }

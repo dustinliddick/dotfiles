@@ -1,0 +1,17 @@
+# Essential plugins only
+# Git integration
+ohmyzsh/ohmyzsh path:plugins/git
+
+# MacOS specific
+ohmyzsh/ohmyzsh path:plugins/macos
+
+# Development tools
+ohmyzsh/ohmyzsh path:plugins/brew
+
+# Enhanced shell experience
+zsh-users/zsh-autosuggestions
+zsh-users/zsh-syntax-highlighting
+zsh-users/zsh-completions
+
+# Powerlevel10k theme
+romkatv/powerlevel10k
