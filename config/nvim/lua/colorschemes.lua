@@ -92,6 +92,76 @@ M.colorscheme_conf = {
   citruszest = function()
     vim.cmd([[colorscheme citruszest]])
   end,
+  catppuccin = function()
+    require("catppuccin").setup({
+      flavour = "mocha",
+      background = {
+        light = "latte",
+        dark = "mocha",
+      },
+      transparent_background = false,
+      show_end_of_buffer = false,
+      term_colors = true,
+      dim_inactive = {
+        enabled = false,
+        shade = "dark",
+        percentage = 0.15,
+      },
+      no_italic = false,
+      no_bold = false,
+      no_underline = false,
+      styles = {
+        comments = { "italic" },
+        conditionals = { "italic" },
+        loops = {},
+        functions = {},
+        keywords = {},
+        strings = {},
+        variables = {},
+        numbers = {},
+        booleans = {},
+        properties = {},
+        types = {},
+        operators = {},
+      },
+      color_overrides = {},
+      custom_highlights = {},
+      integrations = {
+        cmp = true,
+        gitsigns = true,
+        nvimtree = true,
+        treesitter = true,
+        notify = true,
+        mini = {
+          enabled = true,
+          indentscope_color = "",
+        },
+        telescope = true,
+        which_key = true,
+        fidget = true,
+        mason = true,
+        neotest = true,
+        neotree = true,
+        noice = true,
+        semantic_tokens = true,
+        treesitter_context = true,
+        ts_rainbow2 = true,
+        rainbow_delimiters = true,
+        lsp_trouble = true,
+        barbecue = {
+          dim_dirname = true,
+          bold_basename = true,
+          dim_context = false,
+          alt_background = false,
+        },
+        dropbar = {
+          enabled = true,
+          color_mode = true,
+        },
+      },
+    })
+    vim.cmd([[colorscheme catppuccin]])
+  end,
 }
 
 --- Use a random colorscheme from the pre-defined list of colorschemes.

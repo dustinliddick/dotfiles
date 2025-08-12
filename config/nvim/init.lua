@@ -36,5 +36,5 @@ require("diagnostic-conf")
 -- colorscheme settings
 local color_scheme = require("colorschemes")
 
--- Load a random colorscheme
-color_scheme.rand_colorscheme()
+-- Load Catppuccin as the default colorscheme
+color_scheme.colorscheme_conf.catppuccin()
