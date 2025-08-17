@@ -32,10 +32,11 @@
   # The list of segments shown on the left. Fill it with the most important segments.
   typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(
     # =========================[ Line #1 ]=========================
-    # os_icon               # os identifier
-    context
+    time                    # current time
     dir                     # current directory
     vcs                     # git status
+    aws                     # aws profile
+    terraform               # terraform workspace
     # =========================[ Line #2 ]=========================
     newline                 # \n
     prompt_char             # prompt symbol
@@ -188,12 +189,12 @@
 
   ################################[ prompt_char: prompt symbol ]################################
 
-  # [@] RYG prompt symbol (>>>) if the last command succeeded,
-  # or RYR if the last command failed.
-  local    PROMPT_NORMAL_OK='%B%F{red}❯%F{yellow}❯%F{green}❯%f%b'
-  local PROMPT_NORMAL_ERROR='%B%F{red}❯%F{yellow}❯%F{red}❯%f%b'
-  local    PROMPT_VIMODE_OK='%B%F{green}❮%F{yellow}❮%F{red}❮%f%b'
-  local PROMPT_VIMODE_ERROR='%B%F{red}❮%F{yellow}❮%F{red}❮%f%b'
+  # Single green prompt symbol (❯) if the last command succeeded,
+  # or red if the last command failed.
+  local    PROMPT_NORMAL_OK='%B%F{green}❯%f%b'
+  local PROMPT_NORMAL_ERROR='%B%F{red}❯%f%b'
+  local    PROMPT_VIMODE_OK='%B%F{green}❮%f%b'
+  local PROMPT_VIMODE_ERROR='%B%F{red}❮%f%b'
 
   # [@] Default prompt symbol.
   typeset -g POWERLEVEL9K_PROMPT_CHAR_OK_VIINS_CONTENT_EXPANSION=$PROMPT_NORMAL_OK
@@ -1214,7 +1215,7 @@
   #[ aws: aws profile (https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) ]#
   # Show aws only when the the command you are typing invokes one of these tools.
   # Tip: Remove the next line to always show aws.
-  typeset -g POWERLEVEL9K_AWS_SHOW_ON_COMMAND='aws|awless|terraform|pulumi'
+  # typeset -g POWERLEVEL9K_AWS_SHOW_ON_COMMAND='aws|awless|terraform|pulumi'
 
   # POWERLEVEL9K_AWS_CLASSES is an array with even number of elements. The first element
   # in each pair defines a pattern against which the current AWS profile gets matched.

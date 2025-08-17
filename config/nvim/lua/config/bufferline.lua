@@ -1,7 +1,7 @@
 require("bufferline").setup {
   options = {
     numbers = "none",
-    close_command = "bdelete! %d",
+    close_command = "bprevious | bdelete! %d",
     right_mouse_command = nil,
     left_mouse_command = "buffer %d",
     middle_mouse_command = nil,
@@ -47,4 +47,8 @@ require("bufferline").setup {
 
 vim.keymap.set("n", "<space>bp", "<cmd>BufferLinePick<CR>", {
   desc = "pick a buffer",
+})
+
+vim.keymap.set("n", "<space>bc", "<cmd>BufferLinePickClose<CR>", {
+  desc = "pick and close a buffer",
 })

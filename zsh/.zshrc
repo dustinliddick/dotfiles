@@ -1,6 +1,11 @@
 # ~/.zshrc - Zsh configuration (inspired by wookayin/dotfiles)
 # Personal configuration for enhanced zsh experience
 
+# History configuration - MUST be early to avoid being overridden
+export HISTSIZE=10000           # number of commands in memory
+export SAVEHIST=10000           # number of commands saved to file
+export HISTFILE=~/.zsh_history  # history file location
+
 # Performance optimization: Enable loader for faster startup
 if [[ -v ZSH_PROFILE_LOG ]] && command -v zmodload > /dev/null 2>&1; then
   zmodload zsh/datetime
@@ -213,6 +218,9 @@ setopt INC_APPEND_HISTORY      # append incrementally
 setopt SHARE_HISTORY           # share history between sessions
 setopt HIST_IGNORE_DUPS        # ignore duplicate commands
 setopt HIST_REDUCE_BLANKS      # remove unnecessary blanks
+setopt HIST_IGNORE_SPACE       # ignore commands starting with space
+setopt HIST_EXPIRE_DUPS_FIRST  # expire duplicates first when trimming
+setopt HIST_FIND_NO_DUPS       # don't show duplicates in search
 
 # Enhanced completion system
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
@@ -265,3 +273,6 @@ if [[ -v ZSH_PROFILE_LOG ]]; then
   unsetopt XTRACE
   exec 2>&3 3>&-
 fi
+autoload bashcompinit && bashcompinit
+autoload -Uz compinit && compinit
+complete -C '/opt/homebrew/bin/aws_completer' aws
