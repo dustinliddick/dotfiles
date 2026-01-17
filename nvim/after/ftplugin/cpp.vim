@@ -1,28 +1,36 @@
-" options
-" =======
+set commentstring=//\ %s
 
+" Disable inserting comment leader after hitting o or O or <Enter>
+set formatoptions-=o
+set formatoptions-=r
 
-" cpp-specific Keymaps
-" ====================
+nnoremap <silent> <buffer> <F9> :call <SID>compile_run_cpp()<CR>
 
-" Automatic makeprg generation (regarding %:r.in, %r.ans)
-if !filereadable('Makefile')
-    let b:sourcefile = expand("%")
-    let b:basename = expand("%:t:r")
-    let b:input_file = ""
-    let b:answer_file = ""
-    let b:output_file = b:basename . ".out"
-    if filereadable(b:basename . ".in")  | let b:input_file = b:basename . ".in" | endif
-    if filereadable(b:basename . ".ans") | let b:answer_file = b:basename . ".ans" | endif
+function! s:compile_run_cpp() abort
+  let src_path = expand('%:p:~')
+  let src_noext = expand('%:p:~:r')
+  " The building flags
+  let _flag = '-Wall -Wextra -std=c++11 -O2'
 
-    let b:extraflag = "-fdiagnostics-color=never"  " GCC 4.9+
+  if executable('clang++')
+    let prog = 'clang++'
+  elseif executable('g++')
+    let prog = 'g++'
+  else
+    echoerr 'No C++ compiler found on the system!'
+  endif
+  call s:create_term_buf('h', 20)
+  execute printf('term %s %s %s -o %s && %s', prog, _flag, src_path, src_noext, src_noext)
+  startinsert
+endfunction
 
-    let b:makeprg_compile = printf("g++ -g -Wall --std=c++17 -O2 %s -o %s %s",
-                \ shellescape(expand("%")), shellescape(b:basename), b:extraflag)
-    let b:makeprg_run     = printf("time ./%s", shellescape(b:basename))
-    if !empty(b:input_file)  | let b:makeprg_run .= printf(" < %s", shellescape(b:input_file)) | endif
-    if !empty(b:answer_file) | let b:makeprg_run .= printf(" | tee %s && diff -wu %s %s",
-                \ shellescape(b:output_file), shellescape(b:output_file), shellescape(b:answer_file)) | endif
-
-    let &l:makeprg = "(" . join([b:makeprg_compile, b:makeprg_run], " && ") . ")"
-endif
+function s:create_term_buf(_type, size) abort
+  set splitbelow
+  set splitright
+  if a:_type ==# 'v'
+    vnew
+  else
+    new
+  endif
+  execute 'resize ' . a:size
+endfunction

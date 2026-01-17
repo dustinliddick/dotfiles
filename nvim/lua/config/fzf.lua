@@ -28,8 +28,10 @@ end
 
 function M.setup_fzf()
   local defaults = require('fzf-lua.defaults').defaults
-  local FZF_VERSION = require("fzf-lua.utils").fzf_version() or 0.0  ---@type number (float)
-  local GIT_VERSION = require("fzf-lua.utils").git_version() or 0.0  ---@type number (float)
+  local fzf_version_raw = require("fzf-lua.utils").fzf_version()
+  local FZF_VERSION = (type(fzf_version_raw) == "number") and fzf_version_raw or 0.0  ---@type number (float)
+  local git_version_raw = require("fzf-lua.utils").git_version()
+  local GIT_VERSION = (type(git_version_raw) == "number") and git_version_raw or 0.0  ---@type number (float)
 
   -- fzf-lua.setup(opts)
   local global_opts = {

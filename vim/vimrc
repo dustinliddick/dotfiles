@@ -84,7 +84,6 @@ set ruler
 set backspace=indent,eol,start     " allow backspaces over everything
 set autoindent
 set smartindent
-set pastetoggle=<F8>
 
 set nowrap
 set textwidth=0             " disable automatic line breaking

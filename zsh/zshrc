@@ -268,9 +268,129 @@ if [ -n "$ZSH_PROFILE_LOG" ]; then
   zprof >! "$ZSH_PROFILE_LOG"
 fi
 
+
 # vim: set ts=2 sts=2 sw=2:
 alias mbu='ssh -A mbu-bastion'
 alias collegis='ssh -A col-bastion'
 alias col='ssh -A col-bastion'
 alias ctx='ssh -A ctx-bastion'
 #export XDG_CONFIG_HOME="$HOME/.dotfiles"
+
+
+#### BEGIN AWS STUFF ####
+# --- Base output & no pager ---
+export AWS_PAGER=""
+: "${AWS_DEFAULT_OUTPUT:=json}"
+
+# --- Profile helpers ---
+# List configured profiles from ~/.aws/config + ~/.aws/credentials
+plist() {
+  { grep -hE '^\[profile .+\]|\[default\]' ~/.aws/config 2>/dev/null \
+    | sed -E 's/^\[profile (.+)\]$/\1/; s/^\[(default)\]$/\1/'; \
+    grep -hE '^\[.+\]' ~/.aws/credentials 2>/dev/null \
+    | sed -E 's/^\[(.+)\]$/\1/'; } \
+  | sort -u
+}
+
+# Switch profile/region quickly: p <profile> [region]
+ap() { export AWS_PROFILE="$1"; [ -n "$2" ] && export AWS_REGION="$2"; awswho; }
+
+# Clear *all* AWS creds from env (including assume-role session vars)
+pclear() { unset AWS_PROFILE AWS_REGION AWS_DEFAULT_REGION AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_SECURITY_TOKEN AWS_CREDENTIAL_EXPIRATION; }
+
+# Who am I? (respects profile/assumed role)
+awswho() { aws sts get-caller-identity --query '{Account:Account,Arn:Arn,UserId:UserId}' --output table; }
+
+# Banner (handy for prompts)
+alias awsbanner='echo "Profile: ${AWS_PROFILE:-unset} | Region: ${AWS_REGION:-unset} | Account: $(aws sts get-caller-identity --query Account --output text 2>/dev/null)"'
+
+# --- Organizations (requires org:ListAccounts in the *management* or delegated admin account) ---
+# List org accounts (optionally show only ACTIVE)
+orgaccts() {
+  local status="${1:-}" # ACTIVE | SUSPENDED | (empty for all)
+  if [ -n "$status" ]; then
+    aws organizations list-accounts --query "Accounts[?Status==\`$status\`].[Name,Id,Email,Status]" --output table
+  else
+    aws organizations list-accounts --query "Accounts[*].[Name,Id,Email,Status]" --output table
+  fi
+}
+
+# --- Assume role into a member account ---
+# Usage: assume <account-id|alias> [role-name] [duration-seconds]
+# Defaults: role-name=OrganizationAccountAccessRole, duration=3600
+assume() {
+  local acct="$1"; [ -z "$acct" ] && { echo "Usage: assume <account-id> [role-name] [duration]"; return 1; }
+  local role="${2:-OrganizationAccountAccessRole}"
+  local dur="${3:-3600}"
+
+  local arn="arn:aws:iam::${acct}:role/${role}"
+  local resp
+  if ! resp="$(aws sts assume-role --role-arn "$arn" --role-session-name "cli-${USER:-session}" --duration-seconds "$dur" 2>/dev/null)"; then
+    echo "assume: failed to assume $arn (check profile permissions/role trust)"; return 2
+  fi
+  export AWS_ACCESS_KEY_ID
+  export AWS_SECRET_ACCESS_KEY
+  export AWS_SESSION_TOKEN
+  export AWS_CREDENTIAL_EXPIRATION
+
+  AWS_ACCESS_KEY_ID="$(printf '%s' "$resp" | jq -r '.Credentials.AccessKeyId' 2>/dev/null || aws --output text --query 'Credentials.AccessKeyId' sts get-caller-identity >/dev/null)"
+  AWS_SECRET_ACCESS_KEY="$(printf '%s' "$resp" | jq -r '.Credentials.SecretAccessKey' 2>/dev/null || echo)"
+  AWS_SESSION_TOKEN="$(printf '%s' "$resp" | jq -r '.Credentials.SessionToken' 2>/dev/null || echo)"
+  AWS_CREDENTIAL_EXPIRATION="$(printf '%s' "$resp" | jq -r '.Credentials.Expiration' 2>/dev/null || echo)"
+
+  # Keep your base AWS_PROFILE set (source profile), but env vars take precedence.
+  echo "Assumed ${arn}"
+  awswho
+}
+
+# Return to your base profile by dropping the session keys
+unassume() { unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_SECURITY_TOKEN AWS_CREDENTIAL_EXPIRATION; echo "Cleared session credentials."; awswho; }
+
+# --- SSO quality-of-life (if you use AWS SSO/ IAM Identity Center) ---
+# Login to SSO profile then show caller
+sso-login() { [ -z "$1" ] && { echo "Usage: sso-login <profile>"; return 1; }; AWS_PROFILE="$1" aws sso login && AWS_PROFILE="$1" awswho; }
+# List SSO accounts (after sso login on that profile)
+sso-accounts() { [ -z "$1" ] && { echo "Usage: sso-accounts <profile>"; return 1; }; AWS_PROFILE="$1" aws sso list-accounts --query "accountList[].{Name:accountName,Id:accountId}" --output table; }
+
+# --- Make common commands profile-safe & portable ---
+alias awsj='aws --output json'
+alias awst='aws --output table'
+alias awsy='aws --output yaml'
+
+# EC2 quick views
+alias ec2l='aws ec2 describe-instances --query "Reservations[].Instances[].{Name: Tags[?Key==\`Name\`]|[0].Value, State:State.Name, Type:InstanceType, AZ:Placement.AvailabilityZone, PrivIP:PrivateIpAddress, PubIP:PublicIpAddress}" --output table'
+ec2id() { aws ec2 describe-instances --filters "Name=tag:Name,Values=$1" --query "Reservations[].Instances[].InstanceId" --output text; }
+ec2ip() { aws ec2 describe-instances --filters "Name=tag:Name,Values=$1" --query "Reservations[].Instances[].PublicIpAddress" --output text; }
+
+# SSM
+ssmc() { aws ssm start-session --target "$1"; }
+
+# CloudWatch Logs
+cwt() { aws logs tail "$1" --follow --format detailed; }
+cwg() { aws logs filter-log-events --log-group-name "$1" --filter-pattern "$2" --query 'events[].message' --output text; }
+
+# S3 sync
+s3up() { aws s3 sync "$1" "$2" --delete; }
+s3down() { aws s3 sync "$1" "$2"; }
+
+# ECR login (Podman-friendly)
+ecrlogin() {
+  local acct region
+  acct="$(aws sts get-caller-identity --query Account --output text)"
+  region="${AWS_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}"
+  aws ecr get-login-password \
+    | podman login --username AWS --password-stdin "${acct}.dkr.ecr.${region}.amazonaws.com"
+}
+
+# Route53
+alias r53zones='aws route53 list-hosted-zones --query "HostedZones[].{Name:Name,Id:Id,Private:Config.PrivateZone}" --output table'
+r53recs() { Z=$(aws route53 list-hosted-zones-by-name --dns-name "$1" --query "HostedZones[0].Id" --output text); aws route53 list-resource-record-sets --hosted-zone-id "${Z##*/}" --output table; }
+
+# CloudFormation events
+cft() { aws cloudformation describe-stack-events --stack-name "$1" \
+  --query "StackEvents[].{Time:Timestamp,Status:ResourceStatus,Type:ResourceType,LogicalId:LogicalResourceId,Reason:ResourceStatusReason}" --output table; }
+
+# Parameter Store
+ssmget() { aws ssm get-parameter --name "$1" --with-decryption --query "Parameter.Value" --output text; }
+ssmset() { aws ssm put-parameter --name "$1" --value "$2" --type SecureString --overwrite >/dev/null && echo "OK"; }
+export PATH="/opt/homebrew/opt/openvpn/sbin:$PATH"

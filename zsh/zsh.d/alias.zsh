@@ -176,13 +176,13 @@ function ghn() {
     if [[ $num_lines -gt 25 ]]; then num_lines=$((num_lines - 5)); fi  # more margin
     git history --color=always -n$num_lines "$@" | head -n$num_lines | less --QUIT-AT-EOF -F
 }
-alias gh='ghn'
-alias ghA='gh --all'
-if _version_check $GIT_VERSION "2.0"; then
-  alias gha='gh --exclude=refs/stash --all'
-else
-  alias gha='gh --all'   # git < 1.9 has no --exclude option
-fi
+# alias gh='ghn'  # Commented out to avoid conflict with GitHub CLI
+# alias ghA='gh --all'  # Commented out due to gh alias conflict with GitHub CLI
+# if _version_check $GIT_VERSION "2.0"; then
+#   alias gha='gh --exclude=refs/stash --all'
+# else
+#   alias gha='gh --all'   # git < 1.9 has no --exclude option
+# fi
 
 # git branch: show commit/refs information as well.
 alias gb='git branch -vv'

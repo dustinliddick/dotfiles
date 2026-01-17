@@ -1,7 +1,6 @@
 -- ftplugin/sh.lua (bash)
 
--- Treesitter highlight
-require("config.treesitter").setup_highlight("bash")
+-- Treesitter is configured globally, no need for per-filetype setup
 
 -- Tab size
 vim.opt_local.ts = 2

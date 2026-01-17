@@ -1,6 +1,6 @@
 [user]
 	name = Dustin Liddick
-	email = dustin.liddick@collegiseducation.com
+	email = dustin.liddick@synegen.com
 [alias]
 	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
 [init]

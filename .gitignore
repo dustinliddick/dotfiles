@@ -1,6 +1,9 @@
 .*.sw[a-z]
 .netrwhist
 Session.vim
+.claude/
 
 nvim/spell
 vim/spell
+vim/backup/
+vim/swap/
