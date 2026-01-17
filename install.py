@@ -91,6 +91,7 @@ tasks = {
     '~/.config/ptpython/config.py' : 'python/ptpython.config.py',
 
     # Claude Code
+    '~/.claude/config.json' : 'claude/config.json',
     '~/.claude/settings.json' : 'claude/settings.json',
     '~/.claude/settings.local.json' : 'claude/settings.local.json',
 }
