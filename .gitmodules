@@ -11,3 +11,6 @@
 [submodule "zsh/antidote"]
 	path = zsh/antidote
 	url = https://github.com/mattmc3/antidote
+[submodule "submodules/get-shit-done"]
+	path = submodules/get-shit-done
+	url = https://github.com/glittercowboy/get-shit-done.git

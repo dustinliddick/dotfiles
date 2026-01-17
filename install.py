@@ -274,6 +274,18 @@ EOL
     echo -en '\033[0m';
 ''']
 
+post_actions += [  # get-shit-done
+    '''#!/bin/bash
+    # Install get-shit-done (GSD) for Claude Code
+    if command -v npx >/dev/null 2>&1; then
+        echo "Installing get-shit-done to ~/.claude/ ..."
+        npx get-shit-done-cc --global
+    else
+        echo -e '\033[0;33mWarning: npx not found. Skipping get-shit-done installation.\033[0m'
+        echo -e '\033[0;33mInstall Node.js to use get-shit-done.\033[0m'
+    fi
+''']
+
 
 ################# END OF FIXME #################
 
