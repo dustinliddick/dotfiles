@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(python3 -m pip:*)",
+      "Bash(nvim:*)",
+      "Bash(fc-list:*)",
+      "Bash(system_profiler:*)",
+      "Bash(source:*)"
+    ],
+    "deny": []
+  }
+}

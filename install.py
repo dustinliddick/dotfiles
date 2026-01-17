@@ -89,6 +89,10 @@ tasks = {
     '~/.config/pycodestyle' : 'python/pycodestyle',
     '~/.ptpython/config.py' : dict(action="remove"),
     '~/.config/ptpython/config.py' : 'python/ptpython.config.py',
+
+    # Claude Code
+    '~/.claude/settings.json' : 'claude/settings.json',
+    '~/.claude/settings.local.json' : 'claude/settings.local.json',
 }
 
 
