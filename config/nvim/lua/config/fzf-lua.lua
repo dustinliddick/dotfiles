@@ -8,6 +8,7 @@ require("fzf-lua").setup {
   },
   files = {
     previewer = false,
+    fd_opts = "--color=never --type f --hidden --follow --no-ignore",
   },
 }
 
