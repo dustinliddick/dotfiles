@@ -49,6 +49,17 @@ brew "java"
 brew "maven"
 brew "gradle"
 
+# Formatters and language servers used by the neovim config.
+# See config/nvim/lua/config/conform.lua and lua/config/lsp.lua; without
+# these the formatters are configured but silently do nothing.
+brew "stylua"        # lua
+brew "shfmt"         # sh, bash, zsh
+brew "isort"         # python imports
+brew "prettierd"     # javascript, typescript
+brew "terraform-ls"  # terraform LSP
+# yapf is not a brew formula; it is pip-installed into Homebrew python:
+#   pip3 install --break-system-packages yapf
+
 # Cloud and DevOps
 brew "docker"
 brew "docker-compose"
