@@ -62,7 +62,7 @@ local plugin_specs = {
   },
   {
     "nvim-treesitter/nvim-treesitter",
-    lazy = true,
+    event = { "BufReadPost", "BufNewFile" },
     build = ":TSUpdate",
     config = function()
       require("config.treesitter")
@@ -531,7 +531,7 @@ local plugin_specs = {
   -- file explorer
   {
     "nvim-tree/nvim-tree.lua",
-    keys = { "<space>s" },
+    keys = { "<leader>s" },
     config = function()
       require("config.nvim-tree")
     end,
@@ -607,6 +607,33 @@ local plugin_specs = {
     ---@module "quicker"
     ---@type quicker.SetupOptions
     opts = {},
+  },
+  {
+    "folke/zen-mode.nvim",
+    cmd = "ZenMode",
+    keys = { { "<leader>z", "<cmd>ZenMode<cr>", desc = "Zen Mode" } },
+    opts = {
+      window = {
+        backdrop = 0.95,
+        width = 0.6, -- 60% of editor width
+        height = 1, -- height of the zen window
+        options = {
+          signcolumn = "no", -- disable signcolumn
+          number = false, -- disable number column
+          relativenumber = false, -- disable relative numbers
+        },
+      },
+      plugins = {
+        options = {
+          enabled = true,
+          ruler = false, -- disables the ruler text in the cmd line area
+          showcmd = false, -- disables the command in the last line of the screen
+        },
+        twilight = { enabled = false }, -- enable to start Twilight when zen mode opens
+        gitsigns = { enabled = false }, -- disables git signs
+        tmux = { enabled = false }, -- disables the tmux statusline
+      },
+    },
   },
 }
 

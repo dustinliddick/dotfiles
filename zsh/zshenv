@@ -1,0 +1,290 @@
+# ~/.zshenv
+#
+# Defines environment variables for ZSH.
+# **ALWAYS** sourced first on interactive, login, non-login (script) shells.
+#
+#   ~/.zshenv -> ~/.zprofile -> ~/.zshrc -> ~/.zlogin
+#   ^^^^^^^^^
+#
+# See [fighting with path_helper] https://gist.github.com/Linerre/f11ad4a6a934dcf01ee8415c9457e7b2
+# See https://unix.stackexchange.com/questions/71253/what-should-shouldnt-go-in-zshenv-zshrc-zlogin-zprofile-zlogout
+# TL;DR) $PATH for interactive shell configs should be in ~/.zprofile
+#
+# See also: ~/.zsh/zsh.d/envs.zsh
+#
+
+#
+# Authors:
+#   Sorin Ionescu <sorin.ionescu@gmail.com>
+#   Jongwook Choi <wookayin@gmail.com>
+#
+
+#
+# Browser
+#
+
+if [[ "$OSTYPE" == darwin* ]]; then
+  export BROWSER='open'
+fi
+
+# See https://github.com/neovim/neovim/issues/22717
+# There is really no reason for $VIM and $VIMRUNTIME need to be set on zsh.
+if [[ -o interactive ]]; then
+  unset VIM
+  unset VIMRUNTIME
+fi
+
+# Workaround conda's bug where $HOST messed up to 'x86_64-conda-linux-gnu', etc.
+# https://github.com/conda/conda/issues/7031
+if [[ "$HOST" == *conda* ]]; then
+  export HOST=$(hostname)
+fi
+
+#
+# Language
+#
+
+if [[ -z "$LANG" ]]; then
+  export LANG='en_US.UTF-8'
+fi
+
+# Fix broken, wrong LC variables (e.g. kitty)
+if [[ "$LC_CTYPE" == "UTF-8" ]]; then
+  export LC_CTYPE='en_US.UTF-8'
+fi
+
+# DO NOT run system startup files (e.g., /etc/zprofile, /etc/zshrc, /etc/zsh/*, etc.).
+# This is important to prevent the problematic /etc/zprofile from messing up $PATH (on macOS).
+# On Linux systems, it won't matter as $PATH are not corrupted by /etc/zprofile.
+# A consequence is that /etc/path, /etc/paths.d/*, are no longer added to the $PATH by default,
+# so these would need to be added manually by this user startup file (~/.zshenv).
+# Also, system-wide zshrc (e.g., /etc/zshrc) would need to be manually sourced in ~/.zshrc.
+# see: https://gist.github.com/Linerre/f11ad4a6a934dcf01ee8415c9457e7b2
+unsetopt GLOBAL_RCS
+
+#
+# Paths ($PATH, $path)
+#
+
+typeset -gU cdpath fpath mailpath path
+
+# NOTE: the order is *VERY* important, should be defined in the order of
+#  increasing importance and precedence so that we can "prepend" directories to $path.
+#  It's also important to NOT prepend if already included in $path,
+#  because some PATH entry for subshell or subprocess can be shadowed.
+# NOTE: paths for interactive shells should go into ~/.zshrc
+#
+
+function prepend_path() {
+  # prepend to $PATH, only if the directory exists and is not already included.
+  local p; for p in "$@"; do
+    if [ -d "$p" ] && (( ! ${path[(I)$p]} )); then
+      path=( $p $path )
+    fi
+  done
+}
+
+
+# Add macOS system path (see the "disabled" /etc/zprofile)
+# Note: since path_helper always prepend, it can mess up the order if
+# $PATH is inherited from a parent env (e.g., tmux, nested shell, etc.).
+# So we make a backup before calling it to have the current $path prioritized
+# and those "system path" (e.g., /usr/local/bin) always come after user-config.
+if [ -x /usr/libexec/path_helper ]; then
+  local -a path_orig=($path)
+  eval `/usr/libexec/path_helper -s`
+  path=($path_orig $path)
+fi
+
+# [For Apple Silicon (M1, M2, M3, etc.) USERS]
+# Homebrew: /opt/homebrew/bin must precede /usr/local/bin, etc.
+# NOTE: It's also recommended to put /opt/homebrew/bin to /etc/path
+# for non-interactive programs (e.g., GUI apps and some bash scripts).
+
+if [[ $(uname) == "Darwin" ]]; then
+  if [[ $(uname -m) == "arm64" ]] && [[ -d "/opt/homebrew" ]]; then
+    # Default homebrew installation for arm64
+    export HOMEBREW="/opt/homebrew"
+  elif [[ -d "$HOME/.homebrew" ]]; then
+    # Allow local installation for Homebrew (without sudo)
+    export HOMEBREW="$HOME/.homebrew"
+  fi
+
+  if [[ -n "$HOMEBREW" ]]; then
+    prepend_path "$HOMEBREW/bin"
+    # Homebrew ruby is keg-only, no links at /opt/homebrew/bin.
+    # Note that we need to pin an exact version of ruby
+    prepend_path "$HOMEBREW/opt/ruby@3.0/bin"
+    prepend_path "$HOMEBREW/lib/ruby/gems/3.0.0/bin"
+  fi
+fi
+
+# Node + Yarn
+prepend_path "$HOME/.yarn/bin"
+
+# GO
+# $GOPATH is where go-installed libraries or command line utilities will be installed.
+# Especially, binaries will be located at $HOME/.go/bin, which should be added to $PATH.
+export GOPATH=$HOME/.go
+mkdir -p $GOPATH
+prepend_path "$GOPATH/bin"
+
+# rust (cargo)
+prepend_path "$HOME/.cargo/bin"
+
+# Bazel {{{
+if [ -f "$HOME/.bazel/bin/bazel" ]; then
+  export BAZEL_HOME="$HOME/.bazel"
+  prepend_path "$BAZEL_HOME/bin"
+fi
+
+# dotfiles-populated bin (having quite high priority)
+prepend_path "$HOME/.dotfiles/bin"
+
+# Let ~/.local/bin take the most, biggest precedence
+prepend_path "$HOME/.local/bin"
+
+# conda (miniforge3, miniconda3)
+function _try_conda_base() {
+  local conda_base="$1"
+  [[ -z "$conda_base" ]] && return 1;
+  if [[ -n "$CONDA_EXE" ]]; then
+    return 0;  # do nothing, CONDA_EXE is already found
+  fi
+
+  if [ -d "$conda_base/condabin" ]; then
+    prepend_path "$conda_base/condabin"
+    export CONDA_EXE="$conda_base/bin/conda"
+    if [ ! -f "$CONDA_EXE" ]; then
+      echo "Warning: $CONDA_EXE does not exist"
+    fi
+    return 0;
+  fi
+  return 1;
+}
+
+_try_conda_base "$HOME/.mambaforge" || \
+_try_conda_base "$HOME/mambaforge" || \
+_try_conda_base "$HOME/.miniforge3" || \
+_try_conda_base "$HOME/miniforge3"  || \
+_try_conda_base "$HOME/.miniconda3" || \
+_try_conda_base "$HOME/miniconda3"  || \
+_try_conda_base "/usr/local/miniconda3" || true;
+unfunction _try_conda_base
+
+
+#
+# Editors
+#
+
+if (( $+commands[nvim] )); then
+  export EDITOR='nvim'
+  export VISUAL='nvim'
+else
+  export EDITOR='vim'
+  export VISUAL='vim'
+fi
+
+export PAGER='less'
+
+# in neovim, try :echo stdpath("data")  or :echo $MASON
+export MASON="$HOME/.local/share/nvim/mason/"
+
+# Unset GIT_EDITOR (usually nvr) inside a neovim-floaterm session.
+# See ~/.vimrc: $GIT_EDITOR section for more details.
+if [[ -n "$FLOATERM" ]]; then
+  unset GIT_EDITOR
+fi
+
+
+#
+# Less
+#
+
+# Set the default Less options.
+# Mouse-wheel scrolling has been disabled by -X (disable screen clearing).
+# Remove -X and -F (exit if the content fits on one screen) to enable it.
+export LESS='-F -g -i -M -R -S -w -X -z-4'
+
+# Set the Less input preprocessor.
+if (( $+commands[lesspipe.sh] )); then
+  export LESSOPEN='| /usr/bin/env lesspipe.sh %s 2>&-'
+fi
+
+#
+# Temporary Files
+#
+
+if [[ -d "$TMPDIR" ]]; then
+  export TMPPREFIX="${TMPDIR%/}/zsh"
+  if [[ ! -d "$TMPPREFIX" ]]; then
+    mkdir -p "$TMPPREFIX"
+  fi
+fi
+
+
+#
+# Add custom config directory.
+#  (note that this line is executed before initialization of prezto.)
+# TODO: This is not the right place to configure "custom" $fpath,
+# as some linux systems zsh might be locally-installed on ~/.local/share (like a site config)
+#   but on other systems ~/.local may be treated as user-local config.
+#
+fpath=(
+  ${ZDOTDIR:-$HOME}/.zsh/prezto-themes
+  $HOME/.zsh/functions
+  $HOME/.local/share/zsh/site-functions
+  $fpath   # e.g. /usr/local/share/zsh/site-functions
+)
+
+
+#
+# Python - Virtualenv, etc.
+#
+
+export PYTHONBREAKPOINT='pudb.set_trace'
+
+if [[ "$(uname)" == "Darwin" ]]; then
+    # Mac OS X: use python shipped by Homebrew for virtualenv.
+    export VIRTUALENVWRAPPER_PYTHON='/usr/local/bin/python'
+else
+    # use default system python for virtualenv.
+    export VIRTUALENVWRAPPER_PYTHON='/usr/bin/python'
+fi
+
+# Set the directory where virtual environments are stored.
+export WORKON_HOME="$HOME/.virtualenvs"
+export VIRTUAL_ENV_DISABLE_PROMPT=1
+
+# ensure that all new virtual environments are isolated from the system site-packages.
+# (--no-site-packages has been removed since virtualenv >= 20, which has been the default option)
+# export VIRTUALENVWRAPPER_VIRTUALENV_ARGS='--no-site-packages'
+
+# python startup
+export PYTHONSTARTUP=$HOME/.pythonrc.py
+
+
+# Disable dot files in archive
+export COPYFILE_DISABLE=true
+
+if [ -f "$HOME/.zshenv.local" ]; then
+  source "$HOME/.zshenv.local"
+fi
+
+
+# Enforce system-wide PATH entries to be put at the back, always
+# (this can correct some PATH issues for subshell or subprocess)
+# Note: see ~/.zprofile and ~/.zshrc
+path=( ${path[@]:#/usr/local/bin} )
+path=( ${path[@]:#/usr/local/sbin} )
+path=( ${path[@]:#/usr/bin} )
+path=( ${path[@]:#/usr/sbin} )
+path=( ${path[@]:#/bin} )
+path=( ${path[@]:#/sbin} )
+path=(
+  $path
+  /usr/local/{bin,sbin}
+  /usr/{bin,sbin}
+  /bin
+  /sbin
+)

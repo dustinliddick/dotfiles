@@ -27,7 +27,7 @@ compinit
 # Antidote plugin manager setup
 source /opt/homebrew/opt/antidote/share/antidote/antidote.zsh
 
-# Load generated plugins (static loading for performance)  
+# Load generated plugins (static loading for performance)
 source /Users/dustinliddick/personal_projects/dotfiles/zsh/.zsh_plugins.zsh
 
 # Terminal settings
@@ -40,7 +40,7 @@ HOST_COLOR="${HOST_COLOR:-6}"  # cyan
 # Dynamic tab color for SSH (iTerm2)
 if [[ -n "$SSH_CONNECTION" ]] && [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
   echo -ne "\033]6;1;bg;red;brightness;64\a"
-  echo -ne "\033]6;1;bg;green;brightness;128\a" 
+  echo -ne "\033]6;1;bg;green;brightness;128\a"
   echo -ne "\033]6;1;bg;blue;brightness;255\a"
 fi
 
@@ -67,21 +67,28 @@ fi
 # Lazy loading for performance-critical tools
 # Node Version Manager (nvm) - Lazy loading
 export NVM_DIR="$HOME/.nvm"
-_lazy_load_nvm() {
-  unset -f node npm npx nvm
-  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use
-  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-}
-node() { _lazy_load_nvm; node "$@"; }
-npm() { _lazy_load_nvm; npm "$@"; }
-npx() { _lazy_load_nvm; npx "$@"; }
-nvm() { _lazy_load_nvm; nvm "$@"; }
+
+# Skip lazy loading in Claude Code to avoid infinite recursion
+if [[ -z "${CLAUDECODE}" ]]; then
+  _lazy_load_nvm() {
+    unset -f node npm npx nvm
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+  }
+  node() { _lazy_load_nvm; node "$@"; }
+  npm() { _lazy_load_nvm; npm "$@"; }
+  npx() { _lazy_load_nvm; npx "$@"; }
+  nvm() { _lazy_load_nvm; nvm "$@"; }
+else
+  # In Claude Code, use direct paths to avoid lazy loading issues
+  export PATH="/opt/homebrew/bin:$PATH"
+fi
 
 # wookayin-style aliases and functions
 
 # Basic aliases
 alias ll='ls -alF --color=auto'
-alias la='ls -A --color=auto'  
+alias la='ls -A --color=auto'
 alias l='ls -CF --color=auto'
 alias ls='ls --color=auto'
 alias ..='cd ..'
@@ -140,13 +147,13 @@ function fkill() {
     else
         pid=$(ps -ef | sed 1d | fzf -m --header="[kill:process]" | awk '{print $2}')
     fi
-    
+
     if [ "x$pid" != "x" ]; then
         echo $pid | xargs kill -${1:-9}
     fi
 }
 
-# Enhanced git log with fzf integration  
+# Enhanced git log with fzf integration
 function glog() {
     git log --graph --color=always \
         --format="%C(auto)%h%d %s %C(black)%C(bold)%cr" "$@" |
@@ -206,7 +213,7 @@ function extract() {
 
 # wookayin-style ZSH options
 setopt AUTO_CD                 # cd by typing directory name
-setopt AUTO_PUSHD              # pushd automatically when cd  
+setopt AUTO_PUSHD              # pushd automatically when cd
 setopt PUSHD_IGNORE_DUPS       # ignore duplicate entries in pushd
 setopt CORRECT                 # command spelling correction
 setopt HIST_VERIFY             # verify history expansion
@@ -238,7 +245,7 @@ if command -v fzf >/dev/null 2>&1; then
     export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
     export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
   fi
-  
+
   # Enhanced FZF options with better colors
   export FZF_DEFAULT_OPTS='
     --height 40% --layout=reverse --border --margin=1 --padding=1
@@ -246,7 +253,7 @@ if command -v fzf >/dev/null 2>&1; then
     --color=fg+:#ffffff,bg+:#2d2d30,hl+:#4fc1ff
     --color=info:#ce9178,prompt:#d19a66,pointer:#e06c75
     --color=marker:#98c379,spinner:#56b6c2,header:#61afef'
-    
+
   # FZF key bindings and completion
   [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 fi
@@ -268,6 +275,20 @@ fi
 # Load local customizations
 [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
 
+# AWS stuff for my directory stuff
+alias set-aws='f_set_aws'
+f_set_aws() {
+  if [[ $# -lt 2 ]]; then
+    echo "Usage: set-aws <profile> <region>"
+    return 1
+  fi
+  export AWS_PROFILE="$1"
+  export AWS_REGION="$2"
+  export REGION="$2"
+  echo "✅ AWS profile set to: $AWS_PROFILE"
+  echo "✅ AWS region set to:  $AWS_REGION"
+}
+
 # Profiling end
 if [[ -v ZSH_PROFILE_LOG ]]; then
   unsetopt XTRACE
@@ -276,3 +297,27 @@ fi
 autoload bashcompinit && bashcompinit
 autoload -Uz compinit && compinit
 complete -C '/opt/homebrew/bin/aws_completer' aws
+
+# Fix keybindings for Ctrl-A and Ctrl-E
+bindkey "^A" beginning-of-line
+bindkey "^E" end-of-line
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
+
+# Load modular zsh config
+setopt null_glob
+for file in ~/.zsh/zsh.d/*.zsh; do
+  [[ -r "$file" ]] && source "$file"
+done
+unsetopt null_glob
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/dustinliddick/.lmstudio/bin"
+# End of LM Studio CLI section
+
+
+# opencode
+export PATH=/Users/dustinliddick/.opencode/bin:$PATH
+
+# Minute-Zero: canonical vault for incident artifacts (decided 2026-07-14)
+export MINUTE_ZERO_INCIDENTS_BASE="/Users/dustinliddick/personal_projects/MyBrain"

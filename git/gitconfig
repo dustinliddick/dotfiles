@@ -189,7 +189,7 @@
 
 [credential]
 	# helper = store --file ~/.git-credentials
-	helper = cache --timeout 60
+	helper = osxkeychain
 
 # Github: always use SSH protocol for pushing to github
 # https://stackoverflow.com/questions/43800726/always-pull-using-https-push-using-ssh-using-insteadof
@@ -208,3 +208,5 @@
 	# include external gitconfig file (requires git 1.7.10+)
 	# typically, user.name and user.email is configured.
 	path = ~/.gitconfig.secret
+[user]
+	email = dustin.liddick@synegen.com

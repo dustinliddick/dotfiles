@@ -139,3 +139,9 @@ extract() {
     fi
 }
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
+export PATH="$HOME/.local/bin:$PATH"
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/dustinliddick/.lmstudio/bin"
+# End of LM Studio CLI section
+

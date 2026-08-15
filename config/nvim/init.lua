@@ -13,7 +13,7 @@ vim.loader.enable()
 
 local utils = require("utils")
 
-local expected_version = "0.11.3"
+local expected_version = "0.11.6"
 utils.is_compatible_version(expected_version)
 
 local config_dir = vim.fn.stdpath("config")
@@ -36,5 +36,5 @@ require("diagnostic-conf")
 -- colorscheme settings
 local color_scheme = require("colorschemes")
 
--- Load Catppuccin as the default colorscheme
-color_scheme.colorscheme_conf.catppuccin()
+-- Load onedark as the default colorscheme
+color_scheme.colorscheme_conf.onedark()

@@ -1246,6 +1246,8 @@
       '*'       DEFAULT)
   typeset -g POWERLEVEL9K_AWS_DEFAULT_FOREGROUND=208
   # typeset -g POWERLEVEL9K_AWS_DEFAULT_VISUAL_IDENTIFIER_EXPANSION='⭐'
+  # Display AWS profile and region (using REGION environment variable)
+  typeset -g POWERLEVEL9K_AWS_DEFAULT_CONTENT_EXPANSION='${P9K_CONTENT}${REGION:+ ($REGION)}'
 
   #[ aws_eb_env: aws elastic beanstalk environment (https://aws.amazon.com/elasticbeanstalk/) ]#
   # AWS Elastic Beanstalk environment color.
