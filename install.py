@@ -58,11 +58,12 @@ def print_header():
 
 
 class DotfilesInstaller:
-    def __init__(self, dry_run=False):
+    def __init__(self, dry_run=False, with_packages=False):
         self.dotfiles_dir = Path(__file__).parent.absolute()
         self.home_dir = Path.home()
         self.backup_dir = self.home_dir / f".dotfiles_backup_{os.getpid()}"
         self.dry_run = dry_run
+        self.with_packages = with_packages
         self.is_macos = platform.system() == 'Darwin'
         self.is_linux = platform.system() == 'Linux'
         self.backup_dir_created = False
@@ -229,10 +230,18 @@ class DotfilesInstaller:
         return success_count == len(self.tasks)
 
     def install_packages(self):
-        """Install Homebrew and Brewfile packages on macOS"""
+        """Install Brewfile packages on macOS (opt-in via --with-packages)"""
         print()
         print_colored("🍺 Packages", Colors.BLUE)
         print_colored("─" * 80, Colors.BLUE)
+
+        # Opt-in on purpose. The Brewfile is a fresh-machine wish list, not a
+        # description of any current machine: it carries ~90 casks and some
+        # deprecated taps, so running it unprompted on an established setup
+        # installs a pile of GUI apps nobody asked for.
+        if not self.with_packages:
+            print_info("Skipping Brewfile (pass --with-packages to install)")
+            return True
 
         if not self.is_macos:
             print_info("Not macOS, skipping Homebrew")
@@ -362,9 +371,13 @@ def main():
         description="Install dotfiles by symlinking them into $HOME.")
     parser.add_argument('--dry-run', action='store_true',
                         help="show what would change without modifying anything")
+    parser.add_argument('--with-packages', action='store_true',
+                        help="also run brew bundle against the Brewfile "
+                             "(installs ~90 casks; intended for a new machine)")
     args = parser.parse_args()
 
-    installer = DotfilesInstaller(dry_run=args.dry_run)
+    installer = DotfilesInstaller(dry_run=args.dry_run,
+                                  with_packages=args.with_packages)
 
     try:
         return 0 if installer.install() else 1

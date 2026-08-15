@@ -27,12 +27,23 @@ python3 install.py
 
 The script will:
 - Back up any existing real files it replaces, to `~/.dotfiles_backup_PID`
-- Install packages from the Brewfile (macOS only, if Homebrew is present)
 - Create symbolic links to all configuration files
 - Create `~/.gitconfig.secret` from the template if it does not exist
 - Set proper permissions
 
 Re-running is safe: links already pointing at this repo are left alone.
+
+### 4. On a new machine only: install packages
+
+```bash
+python3 install.py --with-packages
+```
+
+Brewfile installation is opt-in. The Brewfile is a new-machine wish list
+rather than a description of any current machine, so running it on an
+established setup installs around ninety GUI casks you probably did not want.
+Some of its taps (`homebrew/cask-fonts`, `homebrew/bundle`) are also
+deprecated and will fail; prune them before relying on this.
 
 ### 3. Restart your terminal or source your shell config
 
