@@ -54,6 +54,14 @@ local plugin_specs = {
     end,
   },
   {
+    "stevearc/conform.nvim",
+    event = { "BufReadPre", "BufNewFile" },
+    cmd = { "Format", "ConformFormat", "AutoFormat", "ConformInfo" },
+    config = function()
+      require("config.conform")
+    end,
+  },
+  {
     "dnlhc/glance.nvim",
     config = function()
       require("config.glance")
