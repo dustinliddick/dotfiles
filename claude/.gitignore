@@ -1,0 +1,5 @@
+# Third-party clone with its own git history (github.com/JuliusBrussee/caveman)
+commands/caveman/
+
+# Absolute symlink into another repo on this machine; not portable
+commands/minute-zero
