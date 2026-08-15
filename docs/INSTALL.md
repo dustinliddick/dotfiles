@@ -5,22 +5,34 @@
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/dotfiles.git ~/.dotfiles
-cd ~/.dotfiles
+git clone https://github.com/dustin-liddick/dotfiles.git ~/personal_projects/dotfiles
+cd ~/personal_projects/dotfiles
 ```
 
-### 2. Run the installation script
+### 2. Preview what will change
 
 ```bash
-./install.sh
+python3 install.py --dry-run
+```
+
+Nothing is modified. Every link is reported as already correct, newly
+created, or relinked from somewhere else, so you can spot a surprise before
+it touches `$HOME`.
+
+### 3. Run the installation script
+
+```bash
+python3 install.py
 ```
 
 The script will:
-- Backup your existing dotfiles to `~/.dotfiles_backup_TIMESTAMP`
-- Install Homebrew (macOS only)
-- Install packages from the Brewfile
+- Back up any existing real files it replaces, to `~/.dotfiles_backup_PID`
+- Install packages from the Brewfile (macOS only, if Homebrew is present)
 - Create symbolic links to all configuration files
+- Create `~/.gitconfig.secret` from the template if it does not exist
 - Set proper permissions
+
+Re-running is safe: links already pointing at this repo are left alone.
 
 ### 3. Restart your terminal or source your shell config
 
@@ -45,22 +57,25 @@ The installation script handles:
 ## Directory Structure
 
 ```
-~/.dotfiles/
-├── install.sh              # Main installation script
+dotfiles/
+├── install.py              # Main installation script
 ├── backup.sh               # Backup script for existing dotfiles
 ├── Brewfile                # Homebrew packages
-├── .bashrc                 # Bash configuration
-├── .bash_profile           # Bash profile
-├── .zshrc                  # Zsh configuration
-├── .gitconfig              # Git configuration
-├── .gitignore_global       # Global gitignore
-├── .vimrc                  # Vim configuration
-├── .tmux.conf              # Tmux configuration
-├── .ssh/
-│   └── config              # SSH configuration template
+├── zsh/                    # Zsh startup chain (.zshrc, zshenv, zprofile,
+│                           #   zlogin, zlogout, zpreztorc, p10k.zsh) + bash
+├── git/                    # gitconfig, gitignore
+├── vim/                    # .vimrc and vim runtime
+├── python/                 # pythonrc, pylintrc, condarc, pycodestyle
+├── claude/                 # Claude commands
+├── config/                 # XDG configs: nvim, alacritty, bat, kitty,
+│                           #   wezterm, tmux
 ├── docs/                   # Documentation
 └── README.md               # Main documentation
 ```
+
+Note that the shell files live under `zsh/`, not at the repo root. The whole
+zsh startup chain is linked, not just `.zshrc`: `zshenv` owns `$PATH` and
+`zpreztorc` loads prezto, so a machine missing them lands in a broken shell.
 
 ## Backup and Restore
 
