@@ -74,7 +74,14 @@ class DotfilesInstaller:
             
             # Alacritty configuration
             self.home_dir / '.config' / 'alacritty': self.dotfiles_dir / 'config' / 'alacritty',
-            
+
+            # bat configuration
+            self.home_dir / '.config' / 'bat': self.dotfiles_dir / 'config' / 'bat',
+
+            # Terminal emulator configurations
+            self.home_dir / '.config' / 'kitty': self.dotfiles_dir / 'config' / 'kitty',
+            self.home_dir / '.config' / 'wezterm': self.dotfiles_dir / 'config' / 'wezterm',
+
             # Python configurations
             self.home_dir / '.pythonrc.py': self.dotfiles_dir / 'python' / 'pythonrc.py',
             self.home_dir / '.pylintrc': self.dotfiles_dir / 'python' / 'pylintrc',

@@ -1,0 +1,33 @@
+# bat configuration
+# https://github.com/sharkdp/bat
+#
+# One argument per line. Values with globs or spaces must be quoted.
+
+# Theme. Pinned explicitly so appearance does not drift when bat changes
+# its built-in default. `bat --list-themes` shows the rest.
+--theme="Monokai Extended"
+
+--style="numbers,changes,header,grid"
+
+# bat ships no generic *.conf syntax. Out of the box only four path
+# patterns match (/etc/nginx/**, /etc/apache2/**, resolv.conf,
+# /etc/wireguard/*.conf); a .conf anywhere else renders as plain text.
+# INI covers the usual [section] / key = value shape.
+--map-syntax="*.conf:INI"
+--map-syntax="*.cnf:INI"
+--map-syntax="*.conf.local:INI"
+--map-syntax="*.conf.d/*:INI"
+
+# .conf files that are not INI underneath.
+--map-syntax="**/nginx/**/*.conf:nginx"
+--map-syntax="**/apache2/**/*.conf:Apache Conf"
+--map-syntax="**/httpd/**/*.conf:Apache Conf"
+--map-syntax="**/supervisor/**/*.conf:INI"
+--map-syntax="**/systemd/**/*.conf:INI"
+
+# Extensionless and oddly-named files bat does not map on its own.
+--map-syntax="*.tfvars:TOML"
+--map-syntax="*.hcl:TOML"
+--map-syntax=".env.*:Bourne Again Shell (bash)"
+--map-syntax="*.zsh-theme:Bourne Again Shell (bash)"
+--map-syntax="Dockerfile.*:Dockerfile"
