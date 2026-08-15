@@ -119,6 +119,7 @@ vim.lsp.config("*", {
 
 -- A mapping from lsp server name to the executable name
 local enabled_lsp_servers = {
+  terraformls = "terraform-ls",
   pyright = "pyright-langserver",
   ruff = "ruff",
   lua_ls = "lua-language-server",
